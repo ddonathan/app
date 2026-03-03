@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "preCommit": [
+      "npx @biomejs/biome check --write .",
+      "npx @biomejs/biome lint ."
+    ],
+    "postEdit": [
+      "npx @biomejs/biome check --write ${file}"
+    ]
+  }
+}

@@ -9,7 +9,7 @@ export default defineSchema({
       v.literal("active"),
       v.literal("backlog"),
       v.literal("done"),
-      v.literal("someday")
+      v.literal("someday"),
     ),
     owner: v.string(),
     waitingOn: v.optional(v.string()),

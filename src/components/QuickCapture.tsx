@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react";
 import { useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
 import { Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { api } from "../../convex/_generated/api";
 
 export default function QuickCapture() {
   const [open, setOpen] = useState(false);

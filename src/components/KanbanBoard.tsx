@@ -1,15 +1,9 @@
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import type { Id, Doc } from "../../convex/_generated/dataModel";
-import {
-  DndContext,
-  useDroppable,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core";
+import { DndContext, PointerSensor, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import type { Doc, Id } from "../../convex/_generated/dataModel";
 import TaskCard from "./TaskCard";
 
 type TaskStatus = "inbox" | "active" | "backlog" | "done";
@@ -25,13 +19,7 @@ interface KanbanBoardProps {
   onSelectTask: (id: Id<"tasks">) => void;
 }
 
-function DraggableCard({
-  task,
-  onSelect,
-}: {
-  task: Doc<"tasks">;
-  onSelect: () => void;
-}) {
+function DraggableCard({ task, onSelect }: { task: Doc<"tasks">; onSelect: () => void }) {
   const { attributes, listeners, setNodeRef, isDragging } = useSortable({
     id: task._id,
   });
@@ -64,11 +52,7 @@ function DroppableColumn({
       </div>
       <div className="kanban-column-body" ref={setNodeRef}>
         {tasks.map((task) => (
-          <DraggableCard
-            key={task._id}
-            task={task}
-            onSelect={() => onSelectTask(task._id)}
-          />
+          <DraggableCard key={task._id} task={task} onSelect={() => onSelectTask(task._id)} />
         ))}
         {tasks.length === 0 && (
           <div className="empty-state" style={{ padding: 20 }}>
@@ -87,7 +71,7 @@ export default function KanbanBoard({ onSelectTask }: KanbanBoardProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
-    })
+    }),
   );
 
   const handleDragEnd = (event: DragEndEvent) => {

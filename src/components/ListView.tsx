@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
 import { useQuery } from "convex/react";
+import { ArrowDown, ArrowUp } from "lucide-react";
+import { useMemo, useState } from "react";
 import { api } from "../../convex/_generated/api";
-import type { Id, Doc } from "../../convex/_generated/dataModel";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import type { Doc, Id } from "../../convex/_generated/dataModel";
 
 type TaskStatus = "inbox" | "active" | "backlog" | "done" | "someday";
 type SortField = "title" | "status" | "owner" | "dueDate" | "clientName";
@@ -27,9 +27,7 @@ export default function ListView({ onSelectTask }: ListViewProps) {
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
-  const queryArgs = filterStatus
-    ? { status: filterStatus as TaskStatus }
-    : {};
+  const queryArgs = filterStatus ? { status: filterStatus as TaskStatus } : {};
   const tasks = useQuery(api.tasks.list, queryArgs);
 
   const filteredAndSorted = useMemo(() => {
@@ -39,9 +37,7 @@ export default function ListView({ onSelectTask }: ListViewProps) {
 
     if (filterOwner) {
       const lower = filterOwner.toLowerCase();
-      result = result.filter((t) =>
-        t.owner.toLowerCase().includes(lower)
-      );
+      result = result.filter((t) => t.owner.toLowerCase().includes(lower));
     }
 
     result = [...result].sort((a, b) => {
@@ -83,10 +79,7 @@ export default function ListView({ onSelectTask }: ListViewProps) {
   return (
     <div className="list-view-wrapper">
       <div className="list-filters">
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -129,9 +122,7 @@ export default function ListView({ onSelectTask }: ListViewProps) {
               <tr key={task._id} onClick={() => onSelectTask(task._id)}>
                 <td>{task.title}</td>
                 <td>
-                  <span className={`status-badge ${task.status}`}>
-                    {task.status}
-                  </span>
+                  <span className={`status-badge ${task.status}`}>{task.status}</span>
                 </td>
                 <td style={{ color: task.owner ? "var(--text)" : "var(--text-muted)" }}>
                   {task.owner || "--"}

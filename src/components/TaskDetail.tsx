@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { Clock, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import { X, Clock } from "lucide-react";
 
 type TaskStatus = "inbox" | "active" | "backlog" | "done" | "someday";
 
@@ -11,13 +11,7 @@ interface TaskDetailProps {
   onClose: () => void;
 }
 
-const STATUS_OPTIONS: TaskStatus[] = [
-  "inbox",
-  "active",
-  "backlog",
-  "done",
-  "someday",
-];
+const STATUS_OPTIONS: TaskStatus[] = ["inbox", "active", "backlog", "done", "someday"];
 
 function formatTimestamp(ts: number): string {
   const d = new Date(ts);
@@ -31,7 +25,7 @@ function formatTimestamp(ts: number): string {
 
 function computeEtaGap(
   promised: string | undefined,
-  realistic: string | undefined
+  realistic: string | undefined,
 ): { label: string; className: string } | null {
   if (!promised || !realistic) return null;
   const p = new Date(promised).getTime();
@@ -380,9 +374,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 .sort((a, b) => b.timestamp - a.timestamp)
                 .map((entry, i) => (
                   <div key={i} className="log-entry">
-                    <span className="log-time">
-                      {formatTimestamp(entry.timestamp)}
-                    </span>
+                    <span className="log-time">{formatTimestamp(entry.timestamp)}</span>
                     <span className="log-text">{entry.entry}</span>
                   </div>
                 ))}

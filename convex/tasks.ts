@@ -1,5 +1,5 @@
-import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 export const list = query({
   args: {
@@ -9,8 +9,8 @@ export const list = query({
         v.literal("active"),
         v.literal("backlog"),
         v.literal("done"),
-        v.literal("someday")
-      )
+        v.literal("someday"),
+      ),
     ),
     tag: v.optional(v.string()),
     owner: v.optional(v.string()),
@@ -59,8 +59,8 @@ export const create = mutation({
         v.literal("active"),
         v.literal("backlog"),
         v.literal("done"),
-        v.literal("someday")
-      )
+        v.literal("someday"),
+      ),
     ),
     owner: v.optional(v.string()),
     waitingOn: v.optional(v.string()),
@@ -109,8 +109,8 @@ export const update = mutation({
         v.literal("active"),
         v.literal("backlog"),
         v.literal("done"),
-        v.literal("someday")
-      )
+        v.literal("someday"),
+      ),
     ),
     owner: v.optional(v.string()),
     waitingOn: v.optional(v.string()),
@@ -147,7 +147,7 @@ export const move = mutation({
       v.literal("active"),
       v.literal("backlog"),
       v.literal("done"),
-      v.literal("someday")
+      v.literal("someday"),
     ),
   },
   handler: async (ctx, args) => {

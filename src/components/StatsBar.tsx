@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react";
+import { AlertTriangle, CheckCircle, Inbox, Zap } from "lucide-react";
 import { api } from "../../convex/_generated/api";
-import { Inbox, Zap, AlertTriangle, CheckCircle } from "lucide-react";
 
 export default function StatsBar() {
   const stats = useQuery(api.tasks.stats);

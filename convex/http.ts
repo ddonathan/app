@@ -1,7 +1,7 @@
 import { httpRouter } from "convex/server";
-import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
+import { httpAction } from "./_generated/server";
 
 const http = httpRouter();
 
@@ -115,13 +115,7 @@ http.route({
 
     const id = await ctx.runMutation(api.tasks.create, {
       title: body.title as string,
-      status: body.status as
-        | "inbox"
-        | "active"
-        | "backlog"
-        | "done"
-        | "someday"
-        | undefined,
+      status: body.status as "inbox" | "active" | "backlog" | "done" | "someday" | undefined,
       owner: body.owner as string | undefined,
       waitingOn: body.waitingOn as string | undefined,
       agenda: body.agenda as string | undefined,
@@ -163,13 +157,7 @@ http.route({
     const id = await ctx.runMutation(api.tasks.update, {
       id: body.id as Id<"tasks">,
       title: body.title as string | undefined,
-      status: body.status as
-        | "inbox"
-        | "active"
-        | "backlog"
-        | "done"
-        | "someday"
-        | undefined,
+      status: body.status as "inbox" | "active" | "backlog" | "done" | "someday" | undefined,
       owner: body.owner as string | undefined,
       waitingOn: body.waitingOn as string | undefined,
       agenda: body.agenda as string | undefined,
@@ -212,10 +200,7 @@ http.route({
 
     const validStatuses = ["inbox", "active", "backlog", "done", "someday"];
     if (!validStatuses.includes(body.status as string)) {
-      return error(
-        `status must be one of: ${validStatuses.join(", ")}`,
-        400
-      );
+      return error(`status must be one of: ${validStatuses.join(", ")}`, 400);
     }
 
     const id = await ctx.runMutation(api.tasks.move, {

@@ -1,5 +1,5 @@
-import type { Doc } from "../../convex/_generated/dataModel";
 import { Calendar, User } from "lucide-react";
+import type { Doc } from "../../convex/_generated/dataModel";
 
 interface TaskCardProps {
   task: Doc<"tasks">;
@@ -27,16 +27,11 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
   const priority = getPriority(task.tags);
 
   return (
-    <div
-      className={`task-card${isDragging ? " dragging" : ""}`}
-      onClick={onClick}
-    >
+    <div className={`task-card${isDragging ? " dragging" : ""}`} onClick={onClick}>
       <div className="task-card-title">{task.title}</div>
       <div className="task-card-meta">
         {priority && (
-          <span className={`priority-badge ${priority}`}>
-            {priorityLabels[priority]}
-          </span>
+          <span className={`priority-badge ${priority}`}>{priorityLabels[priority]}</span>
         )}
         {task.owner && (
           <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
@@ -50,9 +45,7 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
             {task.dueDate}
           </span>
         )}
-        {task.clientName && (
-          <span style={{ opacity: 0.7 }}>{task.clientName}</span>
-        )}
+        {task.clientName && <span style={{ opacity: 0.7 }}>{task.clientName}</span>}
       </div>
     </div>
   );

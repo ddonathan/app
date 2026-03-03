@@ -1,27 +1,25 @@
-import { useState, useCallback } from "react";
 import { useQuery } from "convex/react";
+import { LayoutGrid, List, Search } from "lucide-react";
+import { useCallback, useState } from "react";
 import { api } from "../convex/_generated/api";
-import type { Id, Doc } from "../convex/_generated/dataModel";
-import { Search, LayoutGrid, List } from "lucide-react";
-import StatsBar from "./components/StatsBar";
+import type { Doc, Id } from "../convex/_generated/dataModel";
 import KanbanBoard from "./components/KanbanBoard";
 import ListView from "./components/ListView";
-import TaskDetail from "./components/TaskDetail";
 import QuickCapture from "./components/QuickCapture";
+import StatsBar from "./components/StatsBar";
+import TaskDetail from "./components/TaskDetail";
 
 type View = "kanban" | "list";
 
 export default function App() {
   const [view, setView] = useState<View>("kanban");
-  const [selectedTaskId, setSelectedTaskId] = useState<Id<"tasks"> | null>(
-    null
-  );
+  const [selectedTaskId, setSelectedTaskId] = useState<Id<"tasks"> | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
   const searchResults = useQuery(
     api.tasks.search,
-    searchQuery.length >= 2 ? { query: searchQuery } : "skip"
+    searchQuery.length >= 2 ? { query: searchQuery } : "skip",
   );
 
   const handleSelectTask = useCallback((id: Id<"tasks">) => {
@@ -88,17 +86,11 @@ export default function App() {
         </div>
 
         <div className="view-tabs">
-          <button
-            className={view === "kanban" ? "active" : ""}
-            onClick={() => setView("kanban")}
-          >
+          <button className={view === "kanban" ? "active" : ""} onClick={() => setView("kanban")}>
             <LayoutGrid size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
             Kanban
           </button>
-          <button
-            className={view === "list" ? "active" : ""}
-            onClick={() => setView("list")}
-          >
+          <button className={view === "list" ? "active" : ""} onClick={() => setView("list")}>
             <List size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
             List
           </button>
@@ -118,9 +110,7 @@ export default function App() {
       </div>
 
       {/* Task detail panel */}
-      {selectedTaskId && (
-        <TaskDetail taskId={selectedTaskId} onClose={handleCloseDetail} />
-      )}
+      {selectedTaskId && <TaskDetail taskId={selectedTaskId} onClose={handleCloseDetail} />}
 
       {/* Quick capture FAB */}
       <QuickCapture />
