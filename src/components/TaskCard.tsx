@@ -9,8 +9,17 @@ interface TaskCardProps {
 
 function getPriority(tags: string[]): string | null {
   for (const tag of tags) {
-    if (tag === "p1" || tag === "p2" || tag === "p3" || tag === "p4") {
-      return tag;
+    if (tag === "!p1" || tag === "!p2" || tag === "!p3" || tag === "!p4") {
+      return tag.slice(1); // return "p1", "p2", etc. for CSS class
+    }
+  }
+  return null;
+}
+
+function findTagByPrefix(tags: string[], prefix: string): string | null {
+  for (const tag of tags) {
+    if (tag.startsWith(prefix)) {
+      return tag.slice(prefix.length);
     }
   }
   return null;
@@ -25,6 +34,8 @@ const priorityLabels: Record<string, string> = {
 
 export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
   const priority = getPriority(task.tags);
+  const owner = findTagByPrefix(task.tags, "own-");
+  const client = findTagByPrefix(task.tags, "c-");
 
   return (
     <button type="button" className={`task-card${isDragging ? " dragging" : ""}`} onClick={onClick}>
@@ -33,10 +44,10 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
         {priority && (
           <span className={`priority-badge ${priority}`}>{priorityLabels[priority]}</span>
         )}
-        {task.owner && (
+        {owner && (
           <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
             <User size={11} />
-            {task.owner}
+            {owner}
           </span>
         )}
         {task.dueDate && (
@@ -45,7 +56,7 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
             {task.dueDate}
           </span>
         )}
-        {task.clientName && <span style={{ opacity: 0.7 }}>{task.clientName}</span>}
+        {client && <span style={{ opacity: 0.7 }}>{client}</span>}
       </div>
     </button>
   );

@@ -740,6 +740,57 @@ a:hover {
   background: #4393e6;
 }
 
+/* Brain Dump */
+.brain-dump-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.brain-dump-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.brain-dump-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  width: 480px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.brain-dump-form h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.brain-dump-form textarea {
+  resize: vertical;
+  min-height: 160px;
+}
+
+.brain-dump-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brain-dump-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 /* Search results dropdown */
 .search-results {
   position: absolute;

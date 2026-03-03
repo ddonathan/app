@@ -3,6 +3,7 @@ import { LayoutGrid, List, Search } from "lucide-react";
 import { useCallback, useState } from "react";
 import { api } from "../convex/_generated/api";
 import type { Doc, Id } from "../convex/_generated/dataModel";
+import BrainDump from "./components/BrainDump";
 import KanbanBoard from "./components/KanbanBoard";
 import ListView from "./components/ListView";
 import QuickCapture from "./components/QuickCapture";
@@ -74,8 +75,8 @@ export default function App() {
                 >
                   <div className="result-title">{task.title}</div>
                   <div className="result-meta">
-                    {task.status} {task.owner ? `| ${task.owner}` : ""}
-                    {task.clientName ? ` | ${task.clientName}` : ""}
+                    {task.status}
+                    {task.tags.length > 0 ? ` | ${task.tags.join(", ")}` : ""}
                   </div>
                 </div>
               ))}
@@ -107,6 +108,7 @@ export default function App() {
             <List size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
             List
           </button>
+          <BrainDump />
         </div>
       </header>
 

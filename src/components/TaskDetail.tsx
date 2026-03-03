@@ -48,38 +48,26 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   const addLog = useMutation(api.tasks.addLog);
 
   const [title, setTitle] = useState("");
-  const [owner, setOwner] = useState("");
-  const [waitingOn, setWaitingOn] = useState("");
-  const [agenda, setAgenda] = useState("");
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
   const [promisedEta, setPromisedEta] = useState("");
   const [realisticEta, setRealisticEta] = useState("");
   const [notes, setNotes] = useState("");
-  const [clientName, setClientName] = useState("");
-  const [source, setSource] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [logEntry, setLogEntry] = useState("");
-  const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     if (task) {
       setTitle(task.title);
-      setOwner(task.owner);
-      setWaitingOn(task.waitingOn ?? "");
-      setAgenda(task.agenda ?? "");
       setStartDate(task.startDate ?? "");
       setDueDate(task.dueDate ?? "");
       setFollowUpDate(task.followUpDate ?? "");
       setPromisedEta(task.promisedEta ?? "");
       setRealisticEta(task.realisticEta ?? "");
       setNotes(task.notes);
-      setClientName(task.clientName ?? "");
-      setSource(task.source ?? "");
       setTags([...task.tags]);
-      setDirty(false);
     }
   }, [task]);
 
@@ -106,26 +94,17 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
     );
   }
 
-  const markDirty = () => setDirty(true);
+  // Live editing: blur handler for text fields
+  const handleBlur = (field: string, value: string) => {
+    const taskValue = field === "title" ? task.title : field === "notes" ? task.notes : undefined;
+    if (value !== taskValue) {
+      updateTask({ id: taskId, [field]: value || undefined });
+    }
+  };
 
-  const handleSave = async () => {
-    await updateTask({
-      id: taskId,
-      title,
-      owner,
-      waitingOn: waitingOn || undefined,
-      agenda: agenda || undefined,
-      startDate: startDate || undefined,
-      dueDate: dueDate || undefined,
-      followUpDate: followUpDate || undefined,
-      promisedEta: promisedEta || undefined,
-      realisticEta: realisticEta || undefined,
-      notes,
-      clientName: clientName || undefined,
-      source: source || undefined,
-      tags,
-    });
-    setDirty(false);
+  // Live editing: date fields fire on change
+  const handleDateChange = (field: string, value: string) => {
+    updateTask({ id: taskId, [field]: value || undefined });
   };
 
   const handleMove = async (status: TaskStatus) => {
@@ -144,16 +123,18 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
       e.preventDefault();
       const newTag = tagInput.trim().toLowerCase();
       if (newTag && !tags.includes(newTag)) {
-        setTags([...tags, newTag]);
-        markDirty();
+        const newTags = [...tags, newTag];
+        setTags(newTags);
+        updateTask({ id: taskId, tags: newTags });
       }
       setTagInput("");
     }
   };
 
   const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter((t) => t !== tag));
-    markDirty();
+    const newTags = tags.filter((t) => t !== tag);
+    setTags(newTags);
+    updateTask({ id: taskId, tags: newTags });
   };
 
   const etaGap = computeEtaGap(promisedEta, realisticEta);
@@ -184,10 +165,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             <input
               id="detail-title"
               value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                markDirty();
-              }}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => handleBlur("title", title)}
             />
           </div>
 
@@ -205,58 +184,6 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
             </div>
           </div>
 
-          {/* Owner / Client */}
-          <div className="detail-field-row">
-            <div className="detail-field">
-              <label htmlFor="detail-owner">Owner</label>
-              <input
-                id="detail-owner"
-                value={owner}
-                onChange={(e) => {
-                  setOwner(e.target.value);
-                  markDirty();
-                }}
-              />
-            </div>
-            <div className="detail-field">
-              <label htmlFor="detail-client">Client</label>
-              <input
-                id="detail-client"
-                value={clientName}
-                onChange={(e) => {
-                  setClientName(e.target.value);
-                  markDirty();
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Waiting On / Agenda */}
-          <div className="detail-field-row">
-            <div className="detail-field">
-              <label htmlFor="detail-waiting-on">Waiting On</label>
-              <input
-                id="detail-waiting-on"
-                value={waitingOn}
-                onChange={(e) => {
-                  setWaitingOn(e.target.value);
-                  markDirty();
-                }}
-              />
-            </div>
-            <div className="detail-field">
-              <label htmlFor="detail-agenda">Agenda</label>
-              <input
-                id="detail-agenda"
-                value={agenda}
-                onChange={(e) => {
-                  setAgenda(e.target.value);
-                  markDirty();
-                }}
-              />
-            </div>
-          </div>
-
           {/* Dates */}
           <div className="detail-field-row">
             <div className="detail-field">
@@ -267,7 +194,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 value={startDate}
                 onChange={(e) => {
                   setStartDate(e.target.value);
-                  markDirty();
+                  handleDateChange("startDate", e.target.value);
                 }}
               />
             </div>
@@ -279,7 +206,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 value={dueDate}
                 onChange={(e) => {
                   setDueDate(e.target.value);
-                  markDirty();
+                  handleDateChange("dueDate", e.target.value);
                 }}
               />
             </div>
@@ -294,21 +221,11 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 value={followUpDate}
                 onChange={(e) => {
                   setFollowUpDate(e.target.value);
-                  markDirty();
+                  handleDateChange("followUpDate", e.target.value);
                 }}
               />
             </div>
-            <div className="detail-field">
-              <label htmlFor="detail-source">Source</label>
-              <input
-                id="detail-source"
-                value={source}
-                onChange={(e) => {
-                  setSource(e.target.value);
-                  markDirty();
-                }}
-              />
-            </div>
+            <div className="detail-field" />
           </div>
 
           {/* ETA */}
@@ -321,7 +238,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 value={promisedEta}
                 onChange={(e) => {
                   setPromisedEta(e.target.value);
-                  markDirty();
+                  handleDateChange("promisedEta", e.target.value);
                 }}
               />
             </div>
@@ -333,7 +250,7 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
                 value={realisticEta}
                 onChange={(e) => {
                   setRealisticEta(e.target.value);
-                  markDirty();
+                  handleDateChange("realisticEta", e.target.value);
                 }}
               />
             </div>
@@ -375,19 +292,10 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               id="detail-notes"
               rows={4}
               value={notes}
-              onChange={(e) => {
-                setNotes(e.target.value);
-                markDirty();
-              }}
+              onChange={(e) => setNotes(e.target.value)}
+              onBlur={() => handleBlur("notes", notes)}
             />
           </div>
-
-          {/* Save */}
-          {dirty && (
-            <button type="button" className="btn-primary" onClick={handleSave}>
-              Save Changes
-            </button>
-          )}
 
           {/* Log */}
           <div className="detail-field">

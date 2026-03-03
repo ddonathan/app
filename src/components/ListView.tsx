@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 
-type TaskStatus = "inbox" | "active" | "backlog" | "done" | "someday";
-type SortField = "title" | "status" | "owner" | "dueDate" | "clientName";
+type SortField = "title" | "status" | "dueDate" | "tags";
 type SortDir = "asc" | "desc";
+type TaskStatus = "inbox" | "active" | "backlog" | "done" | "someday";
 
 interface ListViewProps {
   onSelectTask: (id: Id<"tasks">) => void;
@@ -23,7 +23,7 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
 
 export default function ListView({ onSelectTask }: ListViewProps) {
   const [filterStatus, setFilterStatus] = useState<string>("");
-  const [filterOwner, setFilterOwner] = useState("");
+  const [filterTag, setFilterTag] = useState("");
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
@@ -35,9 +35,9 @@ export default function ListView({ onSelectTask }: ListViewProps) {
 
     let result = tasks;
 
-    if (filterOwner) {
-      const lower = filterOwner.toLowerCase();
-      result = result.filter((t) => t.owner.toLowerCase().includes(lower));
+    if (filterTag) {
+      const lower = filterTag.toLowerCase();
+      result = result.filter((t) => t.tags.some((tag) => tag.toLowerCase().includes(lower)));
     }
 
     result = [...result].sort((a, b) => {
@@ -48,7 +48,7 @@ export default function ListView({ onSelectTask }: ListViewProps) {
     });
 
     return result;
-  }, [tasks, filterOwner, sortField, sortDir]);
+  }, [tasks, filterTag, sortField, sortDir]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -87,9 +87,9 @@ export default function ListView({ onSelectTask }: ListViewProps) {
           ))}
         </select>
         <input
-          placeholder="Filter by owner..."
-          value={filterOwner}
-          onChange={(e) => setFilterOwner(e.target.value)}
+          placeholder="Filter by tag..."
+          value={filterTag}
+          onChange={(e) => setFilterTag(e.target.value)}
         />
       </div>
 
@@ -118,15 +118,6 @@ export default function ListView({ onSelectTask }: ListViewProps) {
                 Status <SortArrow field="status" />
               </th>
               <th
-                onClick={() => handleSort("owner")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") handleSort("owner");
-                }}
-                tabIndex={0}
-              >
-                Owner <SortArrow field="owner" />
-              </th>
-              <th
                 onClick={() => handleSort("dueDate")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") handleSort("dueDate");
@@ -136,15 +127,14 @@ export default function ListView({ onSelectTask }: ListViewProps) {
                 Due Date <SortArrow field="dueDate" />
               </th>
               <th
-                onClick={() => handleSort("clientName")}
+                onClick={() => handleSort("tags")}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") handleSort("clientName");
+                  if (e.key === "Enter" || e.key === " ") handleSort("tags");
                 }}
                 tabIndex={0}
               >
-                Client <SortArrow field="clientName" />
+                Tags <SortArrow field="tags" />
               </th>
-              <th>Tags</th>
             </tr>
           </thead>
           <tbody>
@@ -161,14 +151,8 @@ export default function ListView({ onSelectTask }: ListViewProps) {
                 <td>
                   <span className={`status-badge ${task.status}`}>{task.status}</span>
                 </td>
-                <td style={{ color: task.owner ? "var(--text)" : "var(--text-muted)" }}>
-                  {task.owner || "--"}
-                </td>
                 <td style={{ color: task.dueDate ? "var(--text)" : "var(--text-muted)" }}>
                   {task.dueDate || "--"}
-                </td>
-                <td style={{ color: task.clientName ? "var(--text)" : "var(--text-muted)" }}>
-                  {task.clientName || "--"}
                 </td>
                 <td>
                   {task.tags.map((tag) => (
@@ -192,11 +176,9 @@ function getFieldValue(task: Doc<"tasks">, field: SortField): string {
       return task.title;
     case "status":
       return task.status;
-    case "owner":
-      return task.owner;
     case "dueDate":
       return task.dueDate ?? "";
-    case "clientName":
-      return task.clientName ?? "";
+    case "tags":
+      return task.tags.join(", ");
   }
 }

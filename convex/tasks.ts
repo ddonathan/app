@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
@@ -14,8 +15,6 @@ export const list = query({
       ),
     ),
     tag: v.optional(v.string()),
-    owner: v.optional(v.string()),
-    clientName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     let tasks: Doc<"tasks">[] = [];
@@ -30,15 +29,9 @@ export const list = query({
       tasks = await ctx.db.query("tasks").collect();
     }
 
-    if (args.owner) {
-      tasks = tasks.filter((t) => t.owner === args.owner);
-    }
     if (args.tag) {
       const tag = args.tag;
       tasks = tasks.filter((t) => t.tags.includes(tag));
-    }
-    if (args.clientName) {
-      tasks = tasks.filter((t) => t.clientName === args.clientName);
     }
 
     tasks.sort((a, b) => b.createdAt - a.createdAt);
@@ -65,9 +58,6 @@ export const create = mutation({
         v.literal("someday"),
       ),
     ),
-    owner: v.optional(v.string()),
-    waitingOn: v.optional(v.string()),
-    agenda: v.optional(v.string()),
     startDate: v.optional(v.string()),
     dueDate: v.optional(v.string()),
     followUpDate: v.optional(v.string()),
@@ -76,16 +66,11 @@ export const create = mutation({
     tags: v.optional(v.array(v.string())),
     notes: v.optional(v.string()),
     log: v.optional(v.array(v.object({ timestamp: v.number(), entry: v.string() }))),
-    source: v.optional(v.string()),
-    clientName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const taskId = await ctx.db.insert("tasks", {
       title: args.title,
       status: args.status ?? "inbox",
-      owner: args.owner ?? "",
-      waitingOn: args.waitingOn,
-      agenda: args.agenda,
       createdAt: Date.now(),
       startDate: args.startDate,
       dueDate: args.dueDate,
@@ -95,8 +80,10 @@ export const create = mutation({
       tags: args.tags ?? [],
       notes: args.notes ?? "",
       log: args.log ?? [],
-      source: args.source,
-      clientName: args.clientName,
+    });
+    await ctx.scheduler.runAfter(0, internal.webhooks.fire, {
+      event: "task.created",
+      data: { id: taskId, title: args.title },
     });
     return taskId;
   },
@@ -115,9 +102,6 @@ export const update = mutation({
         v.literal("someday"),
       ),
     ),
-    owner: v.optional(v.string()),
-    waitingOn: v.optional(v.string()),
-    agenda: v.optional(v.string()),
     startDate: v.optional(v.string()),
     dueDate: v.optional(v.string()),
     followUpDate: v.optional(v.string()),
@@ -125,8 +109,6 @@ export const update = mutation({
     realisticEta: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     notes: v.optional(v.string()),
-    source: v.optional(v.string()),
-    clientName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { id, ...fields } = args;
@@ -138,6 +120,10 @@ export const update = mutation({
       }
     }
     await ctx.db.patch(id, updates);
+    await ctx.scheduler.runAfter(0, internal.webhooks.fire, {
+      event: "task.updated",
+      data: { id, ...updates },
+    });
     return id;
   },
 });
@@ -165,6 +151,10 @@ export const move = mutation({
     await ctx.db.patch(args.id, {
       status: args.status,
       log: [...task.log, logEntry],
+    });
+    await ctx.scheduler.runAfter(0, internal.webhooks.fire, {
+      event: "task.moved",
+      data: { id: args.id, status: args.status },
     });
     return args.id;
   },
@@ -223,11 +213,12 @@ export const byPerson = query({
     const allTasks = await ctx.db.query("tasks").collect();
     const personLower = args.person.toLowerCase();
 
+    // Match p-name tags (e.g., p-alleha, p-dan)
     return allTasks.filter((t) => {
-      const ownerMatch = t.owner.toLowerCase().includes(personLower);
-      const waitingMatch = t.waitingOn?.toLowerCase().includes(personLower) ?? false;
-      const agendaMatch = t.agenda?.toLowerCase().includes(personLower) ?? false;
-      return ownerMatch || waitingMatch || agendaMatch;
+      return t.tags.some((tag) => {
+        if (!tag.startsWith("p-")) return false;
+        return tag.toLowerCase().includes(personLower);
+      });
     });
   },
 });

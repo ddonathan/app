@@ -10,7 +10,7 @@ const http = httpRouter();
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
@@ -83,12 +83,10 @@ http.route({
       | "someday"
       | undefined;
     const tag = url.searchParams.get("tag") ?? undefined;
-    const owner = url.searchParams.get("owner") ?? undefined;
 
     const tasks = await ctx.runQuery(api.tasks.list, {
       status: status || undefined,
       tag,
-      owner,
     });
     return json(tasks);
   }),
@@ -116,9 +114,6 @@ http.route({
     const id = await ctx.runMutation(api.tasks.create, {
       title: body.title as string,
       status: body.status as "inbox" | "active" | "backlog" | "done" | "someday" | undefined,
-      owner: body.owner as string | undefined,
-      waitingOn: body.waitingOn as string | undefined,
-      agenda: body.agenda as string | undefined,
       startDate: body.startDate as string | undefined,
       dueDate: body.dueDate as string | undefined,
       followUpDate: body.followUpDate as string | undefined,
@@ -127,8 +122,6 @@ http.route({
       tags: body.tags as string[] | undefined,
       notes: body.notes as string | undefined,
       log: body.log as Array<{ timestamp: number; entry: string }> | undefined,
-      source: body.source as string | undefined,
-      clientName: body.clientName as string | undefined,
     });
 
     return json({ id }, 201);
@@ -158,9 +151,6 @@ http.route({
       id: body.id as Id<"tasks">,
       title: body.title as string | undefined,
       status: body.status as "inbox" | "active" | "backlog" | "done" | "someday" | undefined,
-      owner: body.owner as string | undefined,
-      waitingOn: body.waitingOn as string | undefined,
-      agenda: body.agenda as string | undefined,
       startDate: body.startDate as string | undefined,
       dueDate: body.dueDate as string | undefined,
       followUpDate: body.followUpDate as string | undefined,
@@ -168,8 +158,6 @@ http.route({
       realisticEta: body.realisticEta as string | undefined,
       tags: body.tags as string[] | undefined,
       notes: body.notes as string | undefined,
-      source: body.source as string | undefined,
-      clientName: body.clientName as string | undefined,
     });
 
     return json({ id });
@@ -253,6 +241,92 @@ http.route({
 
     const stats = await ctx.runQuery(api.tasks.stats, {});
     return json(stats);
+  }),
+});
+
+// ---------- CORS preflight for webhooks ----------
+
+http.route({
+  path: "/api/webhooks",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+// ---------- POST /api/webhooks ----------
+
+http.route({
+  path: "/api/webhooks",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.url || typeof body.url !== "string") {
+      return error("url is required and must be a string", 400);
+    }
+    if (!body.secret || typeof body.secret !== "string") {
+      return error("secret is required and must be a string", 400);
+    }
+    if (!Array.isArray(body.events)) {
+      return error("events is required and must be an array of strings", 400);
+    }
+
+    const id = await ctx.runMutation(api.webhooks.createWebhook, {
+      url: body.url as string,
+      secret: body.secret as string,
+      events: body.events as string[],
+      enabled: body.enabled as boolean | undefined,
+    });
+
+    return json({ id }, 201);
+  }),
+});
+
+// ---------- GET /api/webhooks ----------
+
+http.route({
+  path: "/api/webhooks",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    const webhooks = await ctx.runQuery(api.webhooks.listWebhooks, {});
+    return json(webhooks);
+  }),
+});
+
+// ---------- DELETE /api/webhooks ----------
+
+http.route({
+  path: "/api/webhooks",
+  method: "DELETE",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.id || typeof body.id !== "string") {
+      return error("id is required and must be a string", 400);
+    }
+
+    const id = await ctx.runMutation(api.webhooks.deleteWebhook, {
+      id: body.id as Id<"webhooks">,
+    });
+
+    return json({ id });
   }),
 });
 
