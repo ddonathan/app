@@ -38,15 +38,19 @@ export default function QuickCapture() {
 
   return (
     <>
-      <button className="quick-capture-btn" onClick={() => setOpen(true)}>
+      <button type="button" className="quick-capture-btn" onClick={() => setOpen(true)}>
         <Plus size={24} />
       </button>
 
       {open && (
         <div
           className="quick-capture-overlay"
+          role="none"
           onClick={(e) => {
             if (e.target === e.currentTarget) setOpen(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setOpen(false);
           }}
         >
           <form className="quick-capture-form" onSubmit={handleSubmit}>

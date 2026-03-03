@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 export const list = query({
@@ -17,12 +18,13 @@ export const list = query({
     clientName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    let tasks;
+    let tasks: Doc<"tasks">[] = [];
 
     if (args.status) {
+      const status = args.status;
       tasks = await ctx.db
         .query("tasks")
-        .withIndex("by_status", (q) => q.eq("status", args.status!))
+        .withIndex("by_status", (q) => q.eq("status", status))
         .collect();
     } else {
       tasks = await ctx.db.query("tasks").collect();
@@ -32,7 +34,8 @@ export const list = query({
       tasks = tasks.filter((t) => t.owner === args.owner);
     }
     if (args.tag) {
-      tasks = tasks.filter((t) => t.tags.includes(args.tag!));
+      const tag = args.tag;
+      tasks = tasks.filter((t) => t.tags.includes(tag));
     }
     if (args.clientName) {
       tasks = tasks.filter((t) => t.clientName === args.clientName);

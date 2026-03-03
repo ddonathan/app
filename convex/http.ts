@@ -1,3 +1,4 @@
+/// <reference path="env.d.ts" />
 import { httpRouter } from "convex/server";
 import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
@@ -25,8 +26,7 @@ function error(message: string, status: number): Response {
 }
 
 function authorize(request: Request): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const key = (process as any).env.MIRA_API_KEY as string | undefined;
+  const key = process.env.MIRA_API_KEY;
   if (!key) return false;
   const header = request.headers.get("Authorization");
   return header === `Bearer ${key}`;

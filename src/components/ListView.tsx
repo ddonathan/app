@@ -99,19 +99,49 @@ export default function ListView({ onSelectTask }: ListViewProps) {
         <table className="list-table">
           <thead>
             <tr>
-              <th onClick={() => handleSort("title")}>
+              <th
+                onClick={() => handleSort("title")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleSort("title");
+                }}
+                tabIndex={0}
+              >
                 Title <SortArrow field="title" />
               </th>
-              <th onClick={() => handleSort("status")}>
+              <th
+                onClick={() => handleSort("status")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleSort("status");
+                }}
+                tabIndex={0}
+              >
                 Status <SortArrow field="status" />
               </th>
-              <th onClick={() => handleSort("owner")}>
+              <th
+                onClick={() => handleSort("owner")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleSort("owner");
+                }}
+                tabIndex={0}
+              >
                 Owner <SortArrow field="owner" />
               </th>
-              <th onClick={() => handleSort("dueDate")}>
+              <th
+                onClick={() => handleSort("dueDate")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleSort("dueDate");
+                }}
+                tabIndex={0}
+              >
                 Due Date <SortArrow field="dueDate" />
               </th>
-              <th onClick={() => handleSort("clientName")}>
+              <th
+                onClick={() => handleSort("clientName")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") handleSort("clientName");
+                }}
+                tabIndex={0}
+              >
                 Client <SortArrow field="clientName" />
               </th>
               <th>Tags</th>
@@ -119,7 +149,14 @@ export default function ListView({ onSelectTask }: ListViewProps) {
           </thead>
           <tbody>
             {filteredAndSorted.map((task) => (
-              <tr key={task._id} onClick={() => onSelectTask(task._id)}>
+              <tr
+                key={task._id}
+                onClick={() => onSelectTask(task._id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") onSelectTask(task._id);
+                }}
+                tabIndex={0}
+              >
                 <td>{task.title}</td>
                 <td>
                   <span className={`status-badge ${task.status}`}>{task.status}</span>

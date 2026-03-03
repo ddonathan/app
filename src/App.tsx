@@ -65,7 +65,12 @@ export default function App() {
                 <div
                   key={task._id}
                   className="search-result-item"
+                  role="option"
+                  tabIndex={0}
                   onMouseDown={() => handleSearchSelect(task)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") handleSearchSelect(task);
+                  }}
                 >
                   <div className="result-title">{task.title}</div>
                   <div className="result-meta">
@@ -86,11 +91,19 @@ export default function App() {
         </div>
 
         <div className="view-tabs">
-          <button className={view === "kanban" ? "active" : ""} onClick={() => setView("kanban")}>
+          <button
+            type="button"
+            className={view === "kanban" ? "active" : ""}
+            onClick={() => setView("kanban")}
+          >
             <LayoutGrid size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
             Kanban
           </button>
-          <button className={view === "list" ? "active" : ""} onClick={() => setView("list")}>
+          <button
+            type="button"
+            className={view === "list" ? "active" : ""}
+            onClick={() => setView("list")}
+          >
             <List size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
             List
           </button>

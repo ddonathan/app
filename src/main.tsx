@@ -6,7 +6,10 @@ import App from "./App.tsx";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
-createRoot(document.getElementById("root")!).render(
+const rootEl = document.getElementById("root");
+if (!rootEl) throw new Error("Root element not found");
+
+createRoot(rootEl).render(
   <StrictMode>
     <ConvexProvider client={convex}>
       <App />

@@ -27,7 +27,7 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
   const priority = getPriority(task.tags);
 
   return (
-    <div className={`task-card${isDragging ? " dragging" : ""}`} onClick={onClick}>
+    <button type="button" className={`task-card${isDragging ? " dragging" : ""}`} onClick={onClick}>
       <div className="task-card-title">{task.title}</div>
       <div className="task-card-meta">
         {priority && (
@@ -47,6 +47,6 @@ export default function TaskCard({ task, onClick, isDragging }: TaskCardProps) {
         )}
         {task.clientName && <span style={{ opacity: 0.7 }}>{task.clientName}</span>}
       </div>
-    </div>
+    </button>
   );
 }

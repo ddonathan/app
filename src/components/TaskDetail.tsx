@@ -86,11 +86,18 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
   if (!task) {
     return (
       <>
-        <div className="detail-overlay" onClick={onClose} />
+        <div
+          className="detail-overlay"
+          role="none"
+          onClick={onClose}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") onClose();
+          }}
+        />
         <div className="detail-panel">
           <div className="detail-panel-header">
             <h2>Loading...</h2>
-            <button onClick={onClose}>
+            <button type="button" onClick={onClose}>
               <X size={16} />
             </button>
           </div>
@@ -155,19 +162,27 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
   return (
     <>
-      <div className="detail-overlay" onClick={onClose} />
+      <div
+        className="detail-overlay"
+        role="none"
+        onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") onClose();
+        }}
+      />
       <div className="detail-panel">
         <div className="detail-panel-header">
           <h2>Task Detail</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none" }}>
+          <button type="button" onClick={onClose} style={{ background: "none", border: "none" }}>
             <X size={18} />
           </button>
         </div>
         <div className="detail-panel-body">
           {/* Title */}
           <div className="detail-field">
-            <label>Title</label>
+            <label htmlFor="detail-title">Title</label>
             <input
+              id="detail-title"
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value);
@@ -178,12 +193,12 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
           {/* Status + Move actions */}
           <div className="detail-field">
-            <label>
+            <span className="detail-label">
               Status: <span className={`status-badge ${task.status}`}>{task.status}</span>
-            </label>
+            </span>
             <div className="detail-actions">
               {moveTargets.map((s) => (
-                <button key={s} onClick={() => handleMove(s)}>
+                <button type="button" key={s} onClick={() => handleMove(s)}>
                   Move to {s}
                 </button>
               ))}
@@ -193,8 +208,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
           {/* Owner / Client */}
           <div className="detail-field-row">
             <div className="detail-field">
-              <label>Owner</label>
+              <label htmlFor="detail-owner">Owner</label>
               <input
+                id="detail-owner"
                 value={owner}
                 onChange={(e) => {
                   setOwner(e.target.value);
@@ -203,8 +219,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               />
             </div>
             <div className="detail-field">
-              <label>Client</label>
+              <label htmlFor="detail-client">Client</label>
               <input
+                id="detail-client"
                 value={clientName}
                 onChange={(e) => {
                   setClientName(e.target.value);
@@ -217,8 +234,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
           {/* Waiting On / Agenda */}
           <div className="detail-field-row">
             <div className="detail-field">
-              <label>Waiting On</label>
+              <label htmlFor="detail-waiting-on">Waiting On</label>
               <input
+                id="detail-waiting-on"
                 value={waitingOn}
                 onChange={(e) => {
                   setWaitingOn(e.target.value);
@@ -227,8 +245,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               />
             </div>
             <div className="detail-field">
-              <label>Agenda</label>
+              <label htmlFor="detail-agenda">Agenda</label>
               <input
+                id="detail-agenda"
                 value={agenda}
                 onChange={(e) => {
                   setAgenda(e.target.value);
@@ -241,8 +260,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
           {/* Dates */}
           <div className="detail-field-row">
             <div className="detail-field">
-              <label>Start Date</label>
+              <label htmlFor="detail-start-date">Start Date</label>
               <input
+                id="detail-start-date"
                 type="date"
                 value={startDate}
                 onChange={(e) => {
@@ -252,8 +272,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               />
             </div>
             <div className="detail-field">
-              <label>Due Date</label>
+              <label htmlFor="detail-due-date">Due Date</label>
               <input
+                id="detail-due-date"
                 type="date"
                 value={dueDate}
                 onChange={(e) => {
@@ -266,8 +287,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
           <div className="detail-field-row">
             <div className="detail-field">
-              <label>Follow-up Date</label>
+              <label htmlFor="detail-follow-up-date">Follow-up Date</label>
               <input
+                id="detail-follow-up-date"
                 type="date"
                 value={followUpDate}
                 onChange={(e) => {
@@ -277,8 +299,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               />
             </div>
             <div className="detail-field">
-              <label>Source</label>
+              <label htmlFor="detail-source">Source</label>
               <input
+                id="detail-source"
                 value={source}
                 onChange={(e) => {
                   setSource(e.target.value);
@@ -291,8 +314,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
           {/* ETA */}
           <div className="detail-field-row">
             <div className="detail-field">
-              <label>Promised ETA</label>
+              <label htmlFor="detail-promised-eta">Promised ETA</label>
               <input
+                id="detail-promised-eta"
                 type="date"
                 value={promisedEta}
                 onChange={(e) => {
@@ -302,8 +326,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               />
             </div>
             <div className="detail-field">
-              <label>Realistic ETA</label>
+              <label htmlFor="detail-realistic-eta">Realistic ETA</label>
               <input
+                id="detail-realistic-eta"
                 type="date"
                 value={realisticEta}
                 onChange={(e) => {
@@ -323,15 +348,18 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
           {/* Tags */}
           <div className="detail-field">
-            <label>Tags</label>
+            <label htmlFor="detail-tag-input">Tags</label>
             <div className="tags-input-wrapper">
               {tags.map((tag) => (
                 <span key={tag} className="tag-chip">
                   {tag}
-                  <button onClick={() => handleRemoveTag(tag)}>&times;</button>
+                  <button type="button" onClick={() => handleRemoveTag(tag)}>
+                    &times;
+                  </button>
                 </span>
               ))}
               <input
+                id="detail-tag-input"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleAddTag}
@@ -342,8 +370,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
           {/* Notes */}
           <div className="detail-field">
-            <label>Notes</label>
+            <label htmlFor="detail-notes">Notes</label>
             <textarea
+              id="detail-notes"
               rows={4}
               value={notes}
               onChange={(e) => {
@@ -355,14 +384,14 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
 
           {/* Save */}
           {dirty && (
-            <button className="btn-primary" onClick={handleSave}>
+            <button type="button" className="btn-primary" onClick={handleSave}>
               Save Changes
             </button>
           )}
 
           {/* Log */}
           <div className="detail-field">
-            <label>Activity Log</label>
+            <span className="detail-label">Activity Log</span>
             <div className="log-timeline">
               {task.log.length === 0 && (
                 <div style={{ color: "var(--text-muted)", fontSize: "0.8125rem" }}>
@@ -372,8 +401,8 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               {task.log
                 .slice()
                 .sort((a, b) => b.timestamp - a.timestamp)
-                .map((entry, i) => (
-                  <div key={i} className="log-entry">
+                .map((entry) => (
+                  <div key={`${entry.timestamp}-${entry.entry}`} className="log-entry">
                     <span className="log-time">{formatTimestamp(entry.timestamp)}</span>
                     <span className="log-text">{entry.entry}</span>
                   </div>
