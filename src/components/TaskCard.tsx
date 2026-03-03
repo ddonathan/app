@@ -1,4 +1,6 @@
+import { useQuery } from "convex/react";
 import { Calendar, User } from "lucide-react";
+import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
 
 interface TaskCardProps {
@@ -37,9 +39,17 @@ export default function TaskCard({ task, onClick, isDragging, onTagClick }: Task
   const priority = getPriority(task.tags);
   const owner = findTagByPrefix(task.tags, "own-");
   const client = findTagByPrefix(task.tags, "c-");
+  const project = useQuery(api.projects.get, task.projectId ? { id: task.projectId } : "skip");
 
   return (
     <button type="button" className={`task-card${isDragging ? " dragging" : ""}`} onClick={onClick}>
+      {project && (
+        <div
+          className="task-card-project-stripe"
+          style={{ backgroundColor: project.color || "var(--accent)" }}
+          title={project.name}
+        />
+      )}
       <div className="task-card-title">{task.title}</div>
       <div className="task-card-meta">
         {priority && (

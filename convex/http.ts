@@ -134,6 +134,7 @@ http.route({
       tags: body.tags as string[] | undefined,
       notes: body.notes as string | undefined,
       log: body.log as Array<{ timestamp: number; entry: string }> | undefined,
+      projectId: body.projectId as Id<"projects"> | undefined,
     });
 
     return json({ id }, 201);
@@ -215,6 +216,7 @@ http.route({
       realisticEta: body.realisticEta as string | undefined,
       tags: body.tags as string[] | undefined,
       notes: body.notes as string | undefined,
+      projectId: body.projectId as Id<"projects"> | undefined,
     });
 
     return json({ id });
@@ -324,6 +326,163 @@ http.route({
       id: body.id as Id<"tasks">,
     });
     return json({ id, deleted: true });
+  }),
+});
+
+// ---------- CORS preflight for projects ----------
+
+http.route({
+  path: "/api/projects",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/api/projects/stats",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+// ---------- GET /api/projects ----------
+
+http.route({
+  path: "/api/projects",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status") as
+      | "active"
+      | "on-hold"
+      | "completed"
+      | "archived"
+      | undefined;
+
+    const projects = await ctx.runQuery(api.projects.list, {
+      status: status || undefined,
+    });
+    return json(projects);
+  }),
+});
+
+// ---------- POST /api/projects ----------
+
+http.route({
+  path: "/api/projects",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.name || typeof body.name !== "string") {
+      return error("name is required and must be a string", 400);
+    }
+
+    const id = await ctx.runMutation(api.projects.create, {
+      name: body.name as string,
+      description: body.description as string | undefined,
+      status: body.status as "active" | "on-hold" | "completed" | "archived" | undefined,
+      color: body.color as string | undefined,
+      dueDate: body.dueDate as string | undefined,
+      startDate: body.startDate as string | undefined,
+      owner: body.owner as string | undefined,
+      client: body.client as string | undefined,
+    });
+
+    return json({ id }, 201);
+  }),
+});
+
+// ---------- PATCH /api/projects ----------
+
+http.route({
+  path: "/api/projects",
+  method: "PATCH",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.id || typeof body.id !== "string") {
+      return error("id is required and must be a string", 400);
+    }
+
+    const id = await ctx.runMutation(api.projects.update, {
+      id: body.id as Id<"projects">,
+      name: body.name as string | undefined,
+      description: body.description as string | undefined,
+      status: body.status as "active" | "on-hold" | "completed" | "archived" | undefined,
+      color: body.color as string | undefined,
+      dueDate: body.dueDate as string | undefined,
+      startDate: body.startDate as string | undefined,
+      owner: body.owner as string | undefined,
+      client: body.client as string | undefined,
+    });
+
+    return json({ id });
+  }),
+});
+
+// ---------- DELETE /api/projects ----------
+
+http.route({
+  path: "/api/projects",
+  method: "DELETE",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.id || typeof body.id !== "string") {
+      return error("id is required and must be a string", 400);
+    }
+
+    const id = await ctx.runMutation(api.projects.remove, {
+      id: body.id as Id<"projects">,
+    });
+    return json({ id, deleted: true });
+  }),
+});
+
+// ---------- GET /api/projects/stats ----------
+
+http.route({
+  path: "/api/projects/stats",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    const url = new URL(request.url);
+    const id = url.searchParams.get("id");
+    if (!id) {
+      return error("id query parameter is required", 400);
+    }
+
+    const stats = await ctx.runQuery(api.projects.stats, {
+      id: id as Id<"projects">,
+    });
+    return json(stats);
   }),
 });
 

@@ -11,6 +11,41 @@ interface TaskDetailProps {
   onClose: () => void;
 }
 
+function ProjectSelector({
+  taskId,
+  currentProjectId,
+}: {
+  taskId: Id<"tasks">;
+  currentProjectId?: Id<"projects">;
+}) {
+  const projects = useQuery(api.projects.list, {});
+  const updateTask = useMutation(api.tasks.update);
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    updateTask({
+      id: taskId,
+      projectId: value ? (value as Id<"projects">) : undefined,
+    });
+  };
+
+  if (!projects) return null;
+
+  return (
+    <div className="detail-field">
+      <label htmlFor="detail-project">Project</label>
+      <select id="detail-project" value={currentProjectId ?? ""} onChange={handleChange}>
+        <option value="">No project</option>
+        {projects.map((p) => (
+          <option key={p._id} value={p._id}>
+            {p.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 const STATUS_OPTIONS: TaskStatus[] = ["inbox", "active", "backlog", "done", "someday"];
 
 function formatTimestamp(ts: number): string {
@@ -183,6 +218,9 @@ export default function TaskDetail({ taskId, onClose }: TaskDetailProps) {
               ))}
             </div>
           </div>
+
+          {/* Project */}
+          <ProjectSelector taskId={taskId} currentProjectId={task.projectId} />
 
           {/* Dates */}
           <div className="detail-field-row">

@@ -3,7 +3,11 @@ import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../convex/_generated/api";
 
-export default function QuickCapture() {
+export default function QuickCapture({
+  projectId,
+}: {
+  projectId?: import("../../convex/_generated/dataModel").Id<"projects">;
+} = {}) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [tagsStr, setTagsStr] = useState("");
@@ -29,6 +33,7 @@ export default function QuickCapture() {
       title: title.trim(),
       status: "inbox",
       tags: tags.length > 0 ? tags : undefined,
+      projectId,
     });
 
     setTitle("");

@@ -22,6 +22,7 @@ export default defineSchema({
     tags: v.array(v.string()),
     notes: v.string(),
     log: v.array(v.object({ timestamp: v.number(), entry: v.string() })),
+    projectId: v.optional(v.id("projects")),
   })
     .searchIndex("search_title_notes", {
       searchField: "title",
@@ -34,7 +35,26 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_tags", ["tags"])
     .index("by_dueDate", ["dueDate"])
-    .index("by_followUpDate", ["followUpDate"]),
+    .index("by_followUpDate", ["followUpDate"])
+    .index("by_project", ["projectId"]),
+  projects: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    status: v.union(
+      v.literal("active"),
+      v.literal("on-hold"),
+      v.literal("completed"),
+      v.literal("archived"),
+    ),
+    color: v.optional(v.string()),
+    dueDate: v.optional(v.string()),
+    startDate: v.optional(v.string()),
+    owner: v.optional(v.string()),
+    client: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_client", ["client"]),
   webhooks: defineTable({
     url: v.string(),
     secret: v.string(),

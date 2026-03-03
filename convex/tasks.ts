@@ -66,6 +66,7 @@ export const create = mutation({
     tags: v.optional(v.array(v.string())),
     notes: v.optional(v.string()),
     log: v.optional(v.array(v.object({ timestamp: v.number(), entry: v.string() }))),
+    projectId: v.optional(v.id("projects")),
   },
   handler: async (ctx, args) => {
     const taskId = await ctx.db.insert("tasks", {
@@ -80,6 +81,7 @@ export const create = mutation({
       tags: args.tags ?? [],
       notes: args.notes ?? "",
       log: args.log ?? [],
+      projectId: args.projectId,
     });
     await ctx.scheduler.runAfter(0, internal.webhooks.fire, {
       event: "task.created",
@@ -160,6 +162,7 @@ export const update = mutation({
     realisticEta: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     notes: v.optional(v.string()),
+    projectId: v.optional(v.id("projects")),
   },
   handler: async (ctx, args) => {
     const { id, ...fields } = args;

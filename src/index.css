@@ -297,6 +297,7 @@ a:hover {
 
 /* Task Card */
 .task-card {
+  position: relative;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1321,4 +1322,312 @@ a:hover {
   background: rgba(88, 166, 255, 0.15);
   color: var(--accent);
   border-color: var(--accent);
+}
+
+/* ---------- Projects ---------- */
+
+.projects-view {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.projects-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.projects-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.projects-status-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.status-tab {
+  padding: 4px 12px;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.status-tab.active {
+  background: rgba(88, 166, 255, 0.15);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.new-project-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: rgba(88, 166, 255, 0.1);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.new-project-btn:hover {
+  background: rgba(88, 166, 255, 0.2);
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.project-card {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  color: var(--text);
+  transition: border-color 0.15s;
+}
+
+.project-card:hover {
+  border-color: var(--accent);
+}
+
+.project-card-color-stripe {
+  width: 4px;
+  flex-shrink: 0;
+}
+
+.project-card-content {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.project-card-name {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.project-card-desc {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-card-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.project-card-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.progress-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Project Detail ---------- */
+
+.project-detail {
+  padding: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.project-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.delete-btn {
+  padding: 6px 10px;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--p1);
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: rgba(248, 81, 73, 0.1);
+}
+
+.project-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.project-name-input {
+  flex: 1;
+  font-size: 1.25rem;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.project-name-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.project-desc-input {
+  width: 100%;
+  font-size: 0.875rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px;
+  border-radius: 6px;
+  resize: vertical;
+}
+
+.project-desc-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.project-detail-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.project-stats-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.project-stats-row {
+  display: flex;
+  gap: 16px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.project-add-task {
+  display: flex;
+  gap: 8px;
+}
+
+.project-add-task input {
+  flex: 1;
+}
+
+.project-add-task button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: rgba(88, 166, 255, 0.1);
+  color: var(--accent);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.project-task-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.project-task-group h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Task card project stripe */
+.task-card-project-stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 8px 0 0 8px;
 }

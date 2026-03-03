@@ -11,13 +11,15 @@ import KanbanBoard from "./components/KanbanBoard";
 import ListView from "./components/ListView";
 import Login from "./components/Login";
 import NavMenu from "./components/NavMenu";
+import ProjectDetail from "./components/ProjectDetail";
+import ProjectsView from "./components/ProjectsView";
 import QuickCapture from "./components/QuickCapture";
 import StatsBar from "./components/StatsBar";
 import TagsManager from "./components/TagsManager";
 import TaskDetail from "./components/TaskDetail";
 
 type View = "kanban" | "list";
-type Page = "tasks" | "tags" | "fitness" | "bodycomp" | "bloodlabs";
+type Page = "tasks" | "projects" | "tags" | "fitness" | "bodycomp" | "bloodlabs";
 
 export default function App() {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -44,6 +46,7 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
   const [page, setPage] = useState<Page>("tasks");
   const [view, setView] = useState<View>("kanban");
   const [selectedTaskId, setSelectedTaskId] = useState<Id<"tasks"> | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<Id<"projects"> | null>(null);
   const [filterText, setFilterText] = useState("");
   const [showAll, setShowAll] = useState(false);
 
@@ -73,6 +76,7 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
 
         <h1>
           {page === "tasks" && "Tasks"}
+          {page === "projects" && "Projects"}
           {page === "tags" && "Tags"}
           {page === "fitness" && "Big Four No Dread"}
           {page === "bodycomp" && "Body Composition"}
@@ -161,6 +165,21 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
 
           {/* Quick capture FAB */}
           <QuickCapture />
+        </>
+      ) : page === "projects" ? (
+        <>
+          {selectedProjectId ? (
+            <ProjectDetail
+              projectId={selectedProjectId}
+              onBack={() => setSelectedProjectId(null)}
+              onSelectTask={(id) => {
+                setSelectedTaskId(id);
+              }}
+            />
+          ) : (
+            <ProjectsView onSelectProject={setSelectedProjectId} />
+          )}
+          {selectedTaskId && <TaskDetail taskId={selectedTaskId} onClose={handleCloseDetail} />}
         </>
       ) : page === "tags" ? (
         <TagsManager />
