@@ -11,6 +11,7 @@ interface TaskCardProps {
   isDragging?: boolean;
   onTagClick?: (tag: string) => void;
   onOpenTask?: (id: string) => void;
+  onCloseAndNew?: (template: { tags: string[]; projectId?: string }) => void;
 }
 
 function getPriority(tags: string[]): string | null {
@@ -44,6 +45,7 @@ export default function TaskCard({
   isDragging,
   onTagClick,
   onOpenTask,
+  onCloseAndNew,
 }: TaskCardProps) {
   const priority = getPriority(task.tags);
   const owner = findTagByPrefix(task.tags, "own-");
@@ -63,19 +65,14 @@ export default function TaskCard({
     setContextMenu(null);
   }, [task._id]);
 
-  const createTask = useMutation(api.tasks.create);
-
-  const handleCloseAndNew = useCallback(async () => {
+  const handleCloseAndNew = useCallback(() => {
     updateTask({ id: task._id, status: "done" });
-    const newId = await createTask({
-      title: "",
-      status: "inbox",
+    onCloseAndNew?.({
       tags: task.tags,
-      projectId: task.projectId,
+      projectId: task.projectId as string | undefined,
     });
-    onOpenTask?.(newId);
     setContextMenu(null);
-  }, [task, updateTask, createTask, onOpenTask]);
+  }, [task, updateTask, onCloseAndNew]);
 
   return (
     <>
@@ -135,6 +132,14 @@ export default function TaskCard({
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
           items={[
+            {
+              label: "New Task",
+              icon: "➕",
+              onClick: () => {
+                onOpenTask?.("__new__");
+                setContextMenu(null);
+              },
+            },
             {
               label: "Copy Task ID",
               icon: "📋",

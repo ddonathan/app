@@ -37,6 +37,7 @@ interface KanbanBoardProps {
   showAll: boolean;
   filterText: string;
   onTagClick: (tag: string) => void;
+  onCloseAndNew?: (t: { tags: string[]; projectId?: string }) => void;
 }
 
 function DraggableCard({
@@ -44,11 +45,13 @@ function DraggableCard({
   onSelect,
   onTagClick,
   onOpenTask,
+  onCloseAndNew,
 }: {
   task: Doc<"tasks">;
   onSelect: () => void;
   onTagClick?: (tag: string) => void;
   onOpenTask?: (id: string) => void;
+  onCloseAndNew?: (t: { tags: string[]; projectId?: string }) => void;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useSortable({
     id: task._id,
@@ -62,6 +65,7 @@ function DraggableCard({
         isDragging={isDragging}
         onTagClick={onTagClick}
         onOpenTask={onOpenTask}
+        onCloseAndNew={onCloseAndNew}
       />
     </div>
   );
@@ -73,12 +77,14 @@ function DroppableColumn({
   tasks,
   onSelectTask,
   onTagClick,
+  onCloseAndNew,
 }: {
   status: TaskStatus;
   label: string;
   tasks: Doc<"tasks">[];
   onSelectTask: (id: Id<"tasks">) => void;
   onTagClick?: (tag: string) => void;
+  onCloseAndNew?: (t: { tags: string[]; projectId?: string }) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -96,6 +102,7 @@ function DroppableColumn({
             onSelect={() => onSelectTask(task._id)}
             onTagClick={onTagClick}
             onOpenTask={(id) => onSelectTask(id as Id<"tasks">)}
+            onCloseAndNew={onCloseAndNew}
           />
         ))}
         {tasks.length === 0 && (
@@ -113,6 +120,7 @@ export default function KanbanBoard({
   showAll,
   filterText,
   onTagClick,
+  onCloseAndNew,
 }: KanbanBoardProps) {
   const tasks = useQuery(api.tasks.list, {});
   const moveTask = useMutation(api.tasks.move);
@@ -187,6 +195,7 @@ export default function KanbanBoard({
             tasks={tasksByStatus[col.status]}
             onSelectTask={onSelectTask}
             onTagClick={onTagClick}
+            onCloseAndNew={onCloseAndNew}
           />
         ))}
       </div>

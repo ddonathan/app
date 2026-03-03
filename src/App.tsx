@@ -49,8 +49,22 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
   const [selectedProjectId, setSelectedProjectId] = useState<Id<"projects"> | null>(null);
   const [filterText, setFilterText] = useState("");
   const [showAll, setShowAll] = useState(false);
+  const [showNewTaskForm, setShowNewTaskForm] = useState(false);
+  const [newTaskTemplate, setNewTaskTemplate] = useState<
+    | {
+        tags?: string[];
+        projectId?: string;
+        status?: "inbox" | "active" | "backlog" | "done" | "someday";
+      }
+    | undefined
+  >(undefined);
 
   const handleSelectTask = useCallback((id: Id<"tasks">) => {
+    if (id === ("__new__" as Id<"tasks">)) {
+      setShowNewTaskForm(true);
+      setNewTaskTemplate(undefined);
+      return;
+    }
     setSelectedTaskId(id);
   }, []);
 
@@ -149,6 +163,10 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
                 showAll={showAll}
                 filterText={filterText}
                 onTagClick={handleTagClick}
+                onCloseAndNew={(t) => {
+                  setNewTaskTemplate(t);
+                  setShowNewTaskForm(true);
+                }}
               />
             ) : (
               <ListView
@@ -164,7 +182,19 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
           {selectedTaskId && <TaskDetail taskId={selectedTaskId} onClose={handleCloseDetail} />}
 
           {/* Quick capture FAB */}
-          <QuickCapture />
+          <QuickCapture
+            template={newTaskTemplate}
+            forceOpen={showNewTaskForm}
+            onCreated={(id) => {
+              setShowNewTaskForm(false);
+              setNewTaskTemplate(undefined);
+              setSelectedTaskId(id as Id<"tasks">);
+            }}
+            onClose={() => {
+              setShowNewTaskForm(false);
+              setNewTaskTemplate(undefined);
+            }}
+          />
         </>
       ) : page === "projects" ? (
         <>
