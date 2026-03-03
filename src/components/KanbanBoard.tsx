@@ -47,6 +47,7 @@ function DraggableCard({
   task: Doc<"tasks">;
   onSelect: () => void;
   onTagClick?: (tag: string) => void;
+  onOpenTask?: (id: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useSortable({
     id: task._id,
@@ -54,7 +55,13 @@ function DraggableCard({
 
   return (
     <div ref={setNodeRef} {...attributes} {...listeners}>
-      <TaskCard task={task} onClick={onSelect} isDragging={isDragging} onTagClick={onTagClick} />
+      <TaskCard
+        task={task}
+        onClick={onSelect}
+        isDragging={isDragging}
+        onTagClick={onTagClick}
+        onOpenTask={onOpenTask}
+      />
     </div>
   );
 }
@@ -87,6 +94,7 @@ function DroppableColumn({
             task={task}
             onSelect={() => onSelectTask(task._id)}
             onTagClick={onTagClick}
+            onOpenTask={(id) => onSelectTask(id as Id<"tasks">)}
           />
         ))}
         {tasks.length === 0 && (
