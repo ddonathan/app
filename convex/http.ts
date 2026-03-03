@@ -25,7 +25,8 @@ function error(message: string, status: number): Response {
 }
 
 function authorize(request: Request): boolean {
-  const key = globalThis.process?.env?.MIRA_API_KEY;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const key = (process as any).env.MIRA_API_KEY as string | undefined;
   if (!key) return false;
   const header = request.headers.get("Authorization");
   return header === `Bearer ${key}`;
