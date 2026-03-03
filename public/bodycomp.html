@@ -429,7 +429,7 @@ async function loadData() {
         } catch(e) {}
       }
       if (entries.length > 0) {
-        allData = entries.sort((a, b) => a.date.localeCompare(b.date));
+        allData = entries.filter(e => e && e.date).sort((a, b) => a.date.localeCompare(b.date));
         saveToStorage();
         updateDashboard();
         return;
