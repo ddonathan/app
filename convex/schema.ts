@@ -128,4 +128,15 @@ export default defineSchema({
     notes: v.optional(v.string()),
     time: v.optional(v.string()),
   }).index("by_date", ["date"]),
+  bloodlabs: defineTable({
+    drawDate: v.string(),
+    markerName: v.string(),
+    markerDescription: v.optional(v.string()),
+    value: v.float64(),
+    units: v.optional(v.string()),
+    referenceRange: v.optional(v.string()),
+    source: v.optional(v.string()),
+  })
+    .index("by_date", ["drawDate"])
+    .index("by_marker", ["markerName", "drawDate"]),
 });

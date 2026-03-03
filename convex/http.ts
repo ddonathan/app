@@ -895,4 +895,198 @@ http.route({
   }),
 });
 
+// ---------- CORS preflight for bloodlabs ----------
+
+http.route({
+  path: "/api/bloodlabs",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/api/bloodlabs/batch",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/api/bloodlabs/markers",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/api/bloodlabs/stats",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+// ---------- GET /api/bloodlabs ----------
+
+http.route({
+  path: "/api/bloodlabs",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    const url = new URL(request.url);
+    const marker = url.searchParams.get("marker") ?? undefined;
+    const from = url.searchParams.get("from") ?? undefined;
+    const to = url.searchParams.get("to") ?? undefined;
+
+    const entries = await ctx.runQuery(api.bloodlabs.list, {
+      markerName: marker,
+      from,
+      to,
+    });
+    return json(entries);
+  }),
+});
+
+// ---------- POST /api/bloodlabs ----------
+
+http.route({
+  path: "/api/bloodlabs",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.drawDate || typeof body.drawDate !== "string") {
+      return error("drawDate is required and must be a string", 400);
+    }
+    if (!body.markerName || typeof body.markerName !== "string") {
+      return error("markerName is required and must be a string", 400);
+    }
+    if (body.value === undefined || typeof body.value !== "number") {
+      return error("value is required and must be a number", 400);
+    }
+
+    const id = await ctx.runMutation(api.bloodlabs.create, {
+      drawDate: body.drawDate as string,
+      markerName: body.markerName as string,
+      markerDescription: body.markerDescription as string | undefined,
+      value: body.value as number,
+      units: body.units as string | undefined,
+      referenceRange: body.referenceRange as string | undefined,
+      source: body.source as string | undefined,
+    });
+
+    return json({ id }, 201);
+  }),
+});
+
+// ---------- POST /api/bloodlabs/batch ----------
+
+http.route({
+  path: "/api/bloodlabs/batch",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!Array.isArray(body.entries)) {
+      return error("entries is required and must be an array", 400);
+    }
+
+    for (const entry of body.entries) {
+      if (!entry.drawDate || typeof entry.drawDate !== "string") {
+        return error("Each entry must have a drawDate string", 400);
+      }
+      if (!entry.markerName || typeof entry.markerName !== "string") {
+        return error("Each entry must have a markerName string", 400);
+      }
+      if (entry.value === undefined || typeof entry.value !== "number") {
+        return error("Each entry must have a value number", 400);
+      }
+    }
+
+    const ids = await ctx.runMutation(api.bloodlabs.batchCreate, {
+      entries: body.entries as Array<{
+        drawDate: string;
+        markerName: string;
+        markerDescription?: string;
+        value: number;
+        units?: string;
+        referenceRange?: string;
+        source?: string;
+      }>,
+    });
+
+    return json({ ids }, 201);
+  }),
+});
+
+// ---------- DELETE /api/bloodlabs ----------
+
+http.route({
+  path: "/api/bloodlabs",
+  method: "DELETE",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.id || typeof body.id !== "string") {
+      return error("id is required and must be a string", 400);
+    }
+
+    const id = await ctx.runMutation(api.bloodlabs.remove, {
+      id: body.id as Id<"bloodlabs">,
+    });
+    return json({ id, deleted: true });
+  }),
+});
+
+// ---------- GET /api/bloodlabs/markers ----------
+
+http.route({
+  path: "/api/bloodlabs/markers",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    const markers = await ctx.runQuery(api.bloodlabs.markers, {});
+    return json(markers);
+  }),
+});
+
+// ---------- GET /api/bloodlabs/stats ----------
+
+http.route({
+  path: "/api/bloodlabs/stats",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    const stats = await ctx.runQuery(api.bloodlabs.stats, {});
+    return json(stats);
+  }),
+});
+
 export default http;

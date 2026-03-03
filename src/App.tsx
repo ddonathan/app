@@ -3,6 +3,7 @@ import { useConvexAuth } from "convex/react";
 import { Eye, EyeOff, LayoutGrid, List, LogOut, Search } from "lucide-react";
 import { useCallback, useState } from "react";
 import type { Id } from "../convex/_generated/dataModel";
+import BloodLabsDashboard from "./components/BloodLabsDashboard";
 import BodyCompDashboard from "./components/BodyCompDashboard";
 import BrainDump from "./components/BrainDump";
 import FitnessDashboard from "./components/FitnessDashboard";
@@ -16,7 +17,7 @@ import TagsManager from "./components/TagsManager";
 import TaskDetail from "./components/TaskDetail";
 
 type View = "kanban" | "list";
-type Page = "tasks" | "tags" | "fitness" | "bodycomp";
+type Page = "tasks" | "tags" | "fitness" | "bodycomp" | "bloodlabs";
 
 export default function App() {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -75,6 +76,7 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
           {page === "tags" && "Tags"}
           {page === "fitness" && "Big Four No Dread"}
           {page === "bodycomp" && "Body Composition"}
+          {page === "bloodlabs" && "Blood Labs"}
         </h1>
 
         {page === "tasks" && (
@@ -164,9 +166,11 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
         <TagsManager />
       ) : page === "fitness" ? (
         <FitnessDashboard />
-      ) : (
+      ) : page === "bodycomp" ? (
         <BodyCompDashboard />
-      )}
+      ) : page === "bloodlabs" ? (
+        <BloodLabsDashboard />
+      ) : null}
     </>
   );
 }

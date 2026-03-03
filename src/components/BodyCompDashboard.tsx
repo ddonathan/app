@@ -638,7 +638,7 @@ export default function BodyCompDashboard() {
           <div style={styles.photoGrid}>
             {photoEntries.map(({ date, photo }) => (
               <div key={`${date}-${photo}`} style={styles.photoCard}>
-                <img src={photo} alt={`Progress ${date}`} style={styles.photoImg} />
+                <img src={`/${photo}`} alt={`Progress ${date}`} style={styles.photoImg} />
                 <div style={styles.photoCaption}>{formatDate(date)}</div>
               </div>
             ))}
