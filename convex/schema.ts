@@ -41,4 +41,28 @@ export default defineSchema({
     events: v.array(v.string()),
     enabled: v.boolean(),
   }),
+  tags: defineTable({
+    name: v.string(),
+    type: v.union(
+      v.literal("context"),
+      v.literal("person"),
+      v.literal("client"),
+      v.literal("project"),
+      v.literal("priority"),
+      v.literal("owner"),
+      v.literal("source"),
+      v.literal("other"),
+    ),
+    color: v.optional(v.string()),
+    description: v.optional(v.string()),
+    timeRule: v.optional(
+      v.object({
+        hours: v.optional(v.array(v.number())),
+        days: v.optional(v.array(v.string())),
+      }),
+    ),
+    archived: v.optional(v.boolean()),
+  })
+    .index("by_name", ["name"])
+    .index("by_type", ["type"]),
 });

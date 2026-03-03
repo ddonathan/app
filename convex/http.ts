@@ -413,4 +413,154 @@ http.route({
   }),
 });
 
+// ---------- CORS preflight for tags ----------
+
+http.route({
+  path: "/api/tags",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+// ---------- GET /api/tags ----------
+
+http.route({
+  path: "/api/tags",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    const url = new URL(request.url);
+    const type = url.searchParams.get("type") as
+      | "context"
+      | "person"
+      | "client"
+      | "project"
+      | "priority"
+      | "owner"
+      | "source"
+      | "other"
+      | undefined;
+    const includeArchived = url.searchParams.get("includeArchived") === "true" || undefined;
+
+    const tags = await ctx.runQuery(api.tags.list, {
+      type: type || undefined,
+      includeArchived,
+    });
+    return json(tags);
+  }),
+});
+
+// ---------- POST /api/tags ----------
+
+http.route({
+  path: "/api/tags",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.name || typeof body.name !== "string") {
+      return error("name is required and must be a string", 400);
+    }
+    if (!body.type || typeof body.type !== "string") {
+      return error("type is required and must be a string", 400);
+    }
+
+    const id = await ctx.runMutation(api.tags.create, {
+      name: body.name as string,
+      type: body.type as
+        | "context"
+        | "person"
+        | "client"
+        | "project"
+        | "priority"
+        | "owner"
+        | "source"
+        | "other",
+      color: body.color as string | undefined,
+      description: body.description as string | undefined,
+      timeRule: body.timeRule as { hours?: number[]; days?: string[] } | undefined,
+      archived: body.archived as boolean | undefined,
+    });
+
+    return json({ id }, 201);
+  }),
+});
+
+// ---------- PATCH /api/tags ----------
+
+http.route({
+  path: "/api/tags",
+  method: "PATCH",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.id || typeof body.id !== "string") {
+      return error("id is required and must be a string", 400);
+    }
+
+    const id = await ctx.runMutation(api.tags.update, {
+      id: body.id as Id<"tags">,
+      name: body.name as string | undefined,
+      type: body.type as
+        | "context"
+        | "person"
+        | "client"
+        | "project"
+        | "priority"
+        | "owner"
+        | "source"
+        | "other"
+        | undefined,
+      color: body.color as string | undefined,
+      description: body.description as string | undefined,
+      timeRule: body.timeRule as { hours?: number[]; days?: string[] } | undefined,
+      archived: body.archived as boolean | undefined,
+    });
+
+    return json({ id });
+  }),
+});
+
+// ---------- DELETE /api/tags ----------
+
+http.route({
+  path: "/api/tags",
+  method: "DELETE",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.id || typeof body.id !== "string") {
+      return error("id is required and must be a string", 400);
+    }
+
+    const id = await ctx.runMutation(api.tags.remove, {
+      id: body.id as Id<"tags">,
+    });
+    return json({ id, deleted: true });
+  }),
+});
+
 export default http;

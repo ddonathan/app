@@ -7,11 +7,14 @@ import BrainDump from "./components/BrainDump";
 import KanbanBoard from "./components/KanbanBoard";
 import ListView from "./components/ListView";
 import Login from "./components/Login";
+import NavMenu from "./components/NavMenu";
 import QuickCapture from "./components/QuickCapture";
 import StatsBar from "./components/StatsBar";
+import TagsManager from "./components/TagsManager";
 import TaskDetail from "./components/TaskDetail";
 
 type View = "kanban" | "list";
+type Page = "tasks" | "tags";
 
 export default function App() {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -35,6 +38,7 @@ export default function App() {
 }
 
 function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
+  const [page, setPage] = useState<Page>("tasks");
   const [view, setView] = useState<View>("kanban");
   const [selectedTaskId, setSelectedTaskId] = useState<Id<"tasks"> | null>(null);
   const [filterText, setFilterText] = useState("");
@@ -62,83 +66,96 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
     <>
       {/* Header */}
       <header className="app-header">
-        <h1>Tasks</h1>
+        <NavMenu activePage={page} onNavigate={setPage} />
 
-        <div className="search-wrapper">
-          <Search size={14} className="search-icon" />
-          <input
-            placeholder="Filter tasks... (use tags like @context #project)"
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-          />
-        </div>
+        <h1>{page === "tasks" ? "Tasks" : "Tags"}</h1>
 
-        <button
-          type="button"
-          className={`show-all-toggle${showAll ? " active" : ""}`}
-          onClick={() => setShowAll(!showAll)}
-          title={showAll ? "Showing all tasks" : "Hiding done & future tasks"}
-        >
-          {showAll ? <Eye size={14} /> : <EyeOff size={14} />}
-        </button>
+        {page === "tasks" && (
+          <>
+            <div className="search-wrapper">
+              <Search size={14} className="search-icon" />
+              <input
+                placeholder="Filter tasks... (use tags like @context #project)"
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+              />
+            </div>
 
-        <div className="view-tabs">
-          <button
-            type="button"
-            className={view === "kanban" ? "active" : ""}
-            onClick={() => setView("kanban")}
-          >
-            <LayoutGrid size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
-            Kanban
-          </button>
-          <button
-            type="button"
-            className={view === "list" ? "active" : ""}
-            onClick={() => setView("list")}
-          >
-            <List size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
-            List
-          </button>
-          <BrainDump />
-        </div>
+            <button
+              type="button"
+              className={`show-all-toggle${showAll ? " active" : ""}`}
+              onClick={() => setShowAll(!showAll)}
+              title={showAll ? "Showing all tasks" : "Hiding done & future tasks"}
+            >
+              {showAll ? <Eye size={14} /> : <EyeOff size={14} />}
+            </button>
+
+            <div className="view-tabs">
+              <button
+                type="button"
+                className={view === "kanban" ? "active" : ""}
+                onClick={() => setView("kanban")}
+              >
+                <LayoutGrid size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
+                Kanban
+              </button>
+              <button
+                type="button"
+                className={view === "list" ? "active" : ""}
+                onClick={() => setView("list")}
+              >
+                <List size={14} style={{ marginRight: 4, verticalAlign: -2 }} />
+                List
+              </button>
+              <BrainDump />
+            </div>
+          </>
+        )}
 
         <button
           type="button"
           className="sign-out-btn"
           onClick={() => void signOut()}
           title="Sign out"
+          style={page !== "tasks" ? { marginLeft: "auto" } : undefined}
         >
           <LogOut size={14} />
         </button>
       </header>
 
-      {/* Stats */}
-      <StatsBar />
+      {page === "tasks" ? (
+        <>
+          {/* Stats */}
+          <StatsBar />
 
-      {/* Main content */}
-      <div className="app-main">
-        {view === "kanban" ? (
-          <KanbanBoard
-            onSelectTask={handleSelectTask}
-            showAll={showAll}
-            filterText={filterText}
-            onTagClick={handleTagClick}
-          />
-        ) : (
-          <ListView
-            onSelectTask={handleSelectTask}
-            showAll={showAll}
-            filterText={filterText}
-            onTagClick={handleTagClick}
-          />
-        )}
-      </div>
+          {/* Main content */}
+          <div className="app-main">
+            {view === "kanban" ? (
+              <KanbanBoard
+                onSelectTask={handleSelectTask}
+                showAll={showAll}
+                filterText={filterText}
+                onTagClick={handleTagClick}
+              />
+            ) : (
+              <ListView
+                onSelectTask={handleSelectTask}
+                showAll={showAll}
+                filterText={filterText}
+                onTagClick={handleTagClick}
+              />
+            )}
+          </div>
 
-      {/* Task detail panel */}
-      {selectedTaskId && <TaskDetail taskId={selectedTaskId} onClose={handleCloseDetail} />}
+          {/* Task detail panel */}
+          {selectedTaskId && <TaskDetail taskId={selectedTaskId} onClose={handleCloseDetail} />}
 
-      {/* Quick capture FAB */}
-      <QuickCapture />
+          {/* Quick capture FAB */}
+          <QuickCapture />
+        </>
+      ) : (
+        <TagsManager />
+      )}
     </>
   );
 }
