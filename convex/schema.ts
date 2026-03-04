@@ -148,6 +148,34 @@ export default defineSchema({
     notes: v.optional(v.string()),
     time: v.optional(v.string()),
   }).index("by_date", ["date"]),
+  triage: defineTable({
+    sourceId: v.string(),
+    source: v.string(),
+    from: v.string(),
+    fromEmail: v.optional(v.string()),
+    subject: v.string(),
+    bodyPreview: v.string(),
+    receivedAt: v.number(),
+    importance: v.optional(v.string()),
+    hasAttachments: v.optional(v.boolean()),
+    conversationId: v.optional(v.string()),
+    priority: v.string(),
+    category: v.optional(v.string()),
+    summary: v.string(),
+    suggestedAction: v.optional(v.string()),
+    draftReply: v.optional(v.string()),
+    status: v.string(),
+    actedAt: v.optional(v.number()),
+    actedAction: v.optional(v.string()),
+    snoozeUntil: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_sourceId", ["sourceId"])
+    .index("by_status", ["status"])
+    .index("by_priority", ["priority"])
+    .index("by_receivedAt", ["receivedAt"])
+    .index("by_source_status", ["source", "status"]),
   bloodlabs: defineTable({
     drawDate: v.string(),
     markerName: v.string(),

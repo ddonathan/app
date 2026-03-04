@@ -15,6 +15,7 @@ import type * as http from "../http.js";
 import type * as projects from "../projects.js";
 import type * as tags from "../tags.js";
 import type * as tasks from "../tasks.js";
+import type * as triage from "../triage.js";
 import type * as webhooks from "../webhooks.js";
 import type * as workouts from "../workouts.js";
 
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   projects: typeof projects;
   tags: typeof tags;
   tasks: typeof tasks;
+  triage: typeof triage;
   webhooks: typeof webhooks;
   workouts: typeof workouts;
 }>;

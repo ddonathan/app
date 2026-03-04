@@ -16,10 +16,11 @@ import ProjectsView from "./components/ProjectsView";
 import QuickCapture from "./components/QuickCapture";
 import StatsBar from "./components/StatsBar";
 import TagsManager from "./components/TagsManager";
+import TriageInbox from "./components/TriageInbox";
 import TaskDetail from "./components/TaskDetail";
 
 type View = "kanban" | "list";
-type Page = "tasks" | "projects" | "tags" | "fitness" | "bodycomp" | "bloodlabs";
+type Page = "tasks" | "projects" | "tags" | "fitness" | "bodycomp" | "bloodlabs" | "triage";
 
 export default function App() {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -95,6 +96,7 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
           {page === "fitness" && "Big Four No Dread"}
           {page === "bodycomp" && "Body Composition"}
           {page === "bloodlabs" && "Blood Labs"}
+          {page === "triage" && "Triage"}
         </h1>
 
         {page === "tasks" && (
@@ -219,6 +221,8 @@ function AuthenticatedApp({ signOut }: { signOut: () => Promise<void> }) {
         <BodyCompDashboard />
       ) : page === "bloodlabs" ? (
         <BloodLabsDashboard />
+      ) : page === "triage" ? (
+        <TriageInbox />
       ) : null}
     </>
   );

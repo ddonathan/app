@@ -1286,4 +1286,217 @@ http.route({
   }),
 });
 
+// ---------- CORS preflight for triage ----------
+
+http.route({
+  path: "/api/triage",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/api/triage/batch",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/api/triage/act",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/api/triage/stats",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+// ---------- GET /api/triage ----------
+
+http.route({
+  path: "/api/triage",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status") ?? undefined;
+    const source = url.searchParams.get("source") ?? undefined;
+    const priority = url.searchParams.get("priority") ?? undefined;
+
+    const items = await ctx.runQuery(api.triage.list, {
+      status,
+      source,
+      priority,
+    });
+    return json(items);
+  }),
+});
+
+// ---------- POST /api/triage ----------
+
+http.route({
+  path: "/api/triage",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.sourceId || typeof body.sourceId !== "string") {
+      return error("sourceId is required and must be a string", 400);
+    }
+
+    const id = await ctx.runMutation(api.triage.upsert, {
+      sourceId: body.sourceId as string,
+      source: body.source as string,
+      from: body.from as string,
+      fromEmail: body.fromEmail as string | undefined,
+      subject: body.subject as string,
+      bodyPreview: body.bodyPreview as string,
+      receivedAt: body.receivedAt as number,
+      importance: body.importance as string | undefined,
+      hasAttachments: body.hasAttachments as boolean | undefined,
+      conversationId: body.conversationId as string | undefined,
+      priority: body.priority as string,
+      category: body.category as string | undefined,
+      summary: body.summary as string,
+      suggestedAction: body.suggestedAction as string | undefined,
+      draftReply: body.draftReply as string | undefined,
+      status: body.status as string | undefined,
+    });
+
+    return json({ id }, 201);
+  }),
+});
+
+// ---------- POST /api/triage/batch ----------
+
+http.route({
+  path: "/api/triage/batch",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!Array.isArray(body.items)) {
+      return error("items is required and must be an array", 400);
+    }
+
+    const ids = await ctx.runMutation(api.triage.batchUpsert, {
+      items: body.items as Array<{
+        sourceId: string;
+        source: string;
+        from: string;
+        fromEmail?: string;
+        subject: string;
+        bodyPreview: string;
+        receivedAt: number;
+        importance?: string;
+        hasAttachments?: boolean;
+        conversationId?: string;
+        priority: string;
+        category?: string;
+        summary: string;
+        suggestedAction?: string;
+        draftReply?: string;
+        status?: string;
+      }>,
+    });
+
+    return json({ ids }, 201);
+  }),
+});
+
+// ---------- POST /api/triage/act ----------
+
+http.route({
+  path: "/api/triage/act",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.id || typeof body.id !== "string") {
+      return error("id is required and must be a string", 400);
+    }
+    if (!body.action || typeof body.action !== "string") {
+      return error("action is required and must be a string", 400);
+    }
+
+    const result = await ctx.runMutation(api.triage.act, {
+      id: body.id as Id<"triage">,
+      action: body.action as "reply" | "archive" | "snooze" | "delegate" | "dismiss",
+      snoozeUntil: body.snoozeUntil as number | undefined,
+    });
+
+    return json(result);
+  }),
+});
+
+// ---------- GET /api/triage/stats ----------
+
+http.route({
+  path: "/api/triage/stats",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    const stats = await ctx.runQuery(api.triage.stats, {});
+    return json(stats);
+  }),
+});
+
+// ---------- DELETE /api/triage ----------
+
+http.route({
+  path: "/api/triage",
+  method: "DELETE",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return error("Invalid JSON body", 400);
+    }
+
+    if (!body.id || typeof body.id !== "string") {
+      return error("id is required and must be a string", 400);
+    }
+
+    const id = await ctx.runMutation(api.triage.remove, {
+      id: body.id as Id<"triage">,
+    });
+    return json({ id, deleted: true });
+  }),
+});
+
 export default http;
