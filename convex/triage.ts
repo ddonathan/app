@@ -141,6 +141,7 @@ export const act = mutation({
     id: v.id("triage"),
     action: v.string(),
     snoozeUntil: v.optional(v.number()),
+    editedDraft: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const item = await ctx.db.get(args.id);
@@ -148,6 +149,9 @@ export const act = mutation({
 
     const now = Date.now();
     const status = args.action === "snooze" ? "snoozed" : "acted";
+
+    // Determine final draft
+    const finalDraft = args.editedDraft ?? item.draftReply;
 
     await ctx.db.patch(args.id, {
       status,
@@ -157,12 +161,46 @@ export const act = mutation({
       updatedAt: now,
     });
 
+    // Log metrics
+    const draftProvided = !!item.draftReply;
+    let draftAcceptedAsIs: boolean | undefined;
+    let draftEditDistance: number | undefined;
+
+    if (draftProvided && args.action === "reply") {
+      draftAcceptedAsIs = !args.editedDraft || args.editedDraft === item.draftReply;
+      if (!draftAcceptedAsIs && args.editedDraft && item.draftReply) {
+        // Simple edit distance: character-level difference ratio
+        const orig = item.draftReply;
+        const edited = args.editedDraft;
+        const maxLen = Math.max(orig.length, edited.length);
+        let diffs = 0;
+        for (let i = 0; i < maxLen; i++) {
+          if (orig[i] !== edited[i]) diffs++;
+        }
+        draftEditDistance = Math.round((diffs / maxLen) * 100);
+      }
+    }
+
+    await ctx.db.insert("triageMetrics", {
+      triageId: args.id,
+      sourceId: item.sourceId,
+      recommendedAction: item.suggestedAction ?? "unknown",
+      actualAction: args.action,
+      actionAgreed: (item.suggestedAction ?? "unknown") === args.action,
+      draftProvided,
+      draftAcceptedAsIs,
+      draftEditDistance,
+      originalDraft: draftProvided ? item.draftReply : undefined,
+      finalDraft: args.action === "reply" ? finalDraft : undefined,
+      actedAt: now,
+    });
+
     return {
       id: args.id,
       sourceId: item.sourceId,
       source: item.source,
       action: args.action,
-      draftReply: item.draftReply,
+      draftReply: finalDraft,
       fromEmail: item.fromEmail,
       subject: item.subject,
     };
@@ -185,6 +223,42 @@ export const stats = query({
     }
 
     return { byStatus, byPriority, total: all.length };
+  },
+});
+
+export const metrics = query({
+  args: {
+    days: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const since = Date.now() - (args.days ?? 30) * 24 * 60 * 60 * 1000;
+    const all = await ctx.db
+      .query("triageMetrics")
+      .withIndex("by_actedAt", (q) => q.gte("actedAt", since))
+      .collect();
+
+    const total = all.length;
+    if (total === 0) return { total: 0, actionAgreementRate: 0, draftAcceptanceRate: 0, avgEditDistance: 0 };
+
+    const agreed = all.filter((m) => m.actionAgreed).length;
+    const withDraft = all.filter((m) => m.draftProvided);
+    const acceptedAsIs = withDraft.filter((m) => m.draftAcceptedAsIs === true).length;
+    const editDistances = all.filter((m) => m.draftEditDistance !== undefined).map((m) => m.draftEditDistance!);
+    const avgEditDistance = editDistances.length > 0 ? Math.round(editDistances.reduce((a, b) => a + b, 0) / editDistances.length) : 0;
+
+    return {
+      total,
+      actionAgreementRate: Math.round((agreed / total) * 100),
+      draftAcceptanceRate: withDraft.length > 0 ? Math.round((acceptedAsIs / withDraft.length) * 100) : 0,
+      avgEditDistance,
+      breakdown: {
+        totalActions: total,
+        actionsAgreed: agreed,
+        draftsProvided: withDraft.length,
+        draftsAcceptedAsIs: acceptedAsIs,
+        draftsEdited: withDraft.length - acceptedAsIs,
+      },
+    };
   },
 });
 

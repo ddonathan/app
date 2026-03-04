@@ -187,4 +187,19 @@ export default defineSchema({
   })
     .index("by_date", ["drawDate"])
     .index("by_marker", ["markerName", "drawDate"]),
+  triageMetrics: defineTable({
+    triageId: v.id("triage"),
+    sourceId: v.string(),
+    recommendedAction: v.string(),
+    actualAction: v.string(),
+    actionAgreed: v.boolean(),
+    draftProvided: v.boolean(),
+    draftAcceptedAsIs: v.optional(v.boolean()),
+    draftEditDistance: v.optional(v.number()),
+    originalDraft: v.optional(v.string()),
+    finalDraft: v.optional(v.string()),
+    actedAt: v.number(),
+  })
+    .index("by_actedAt", ["actedAt"])
+    .index("by_triageId", ["triageId"]),
 });

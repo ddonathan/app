@@ -1965,3 +1965,69 @@ a:hover {
   font-size: 1.1rem;
   font-weight: 500;
 }
+
+/* ========== Triage Draft Editor ========== */
+
+.triage-draft-editor {
+  width: 100%;
+  min-height: 80px;
+  background: var(--bg, #13131d);
+  border: 1px solid var(--border, #2e2e3e);
+  border-radius: 6px;
+  color: var(--text-primary, #e0e0f0);
+  padding: 0.6rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  margin-top: 0.4rem;
+}
+
+.triage-draft-editor:focus {
+  outline: none;
+  border-color: var(--accent, #7c3aed);
+}
+
+/* ========== Triage Metrics ========== */
+
+.triage-metrics {
+  background: var(--card-bg, #1e1e2e);
+  border: 1px solid var(--border, #2e2e3e);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.triage-metrics-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #a0a0b0);
+  margin-bottom: 0.5rem;
+}
+
+.triage-metrics-grid {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.triage-metric {
+  text-align: center;
+}
+
+.triage-metric-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent, #7c3aed);
+}
+
+.triage-metric-label {
+  font-size: 0.65rem;
+  color: var(--text-secondary, #a0a0b0);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "convex/react";
 import {
   Archive,
   ArrowRight,
+  BarChart3,
   ChevronDown,
   ChevronRight,
   Clock,
@@ -53,13 +54,25 @@ function timeAgo(ts: number): string {
 function TriageCard({ item }: { item: Doc<"triage"> }) {
   const [expanded, setExpanded] = useState(false);
   const [showSnooze, setShowSnooze] = useState(false);
+  const [editedDraft, setEditedDraft] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const actMutation = useMutation(api.triage.act);
 
   const SourceIcon = SOURCE_ICONS[item.source] ?? Mail;
   const priorityColor = PRIORITY_COLORS[item.priority] ?? "#6b7280";
 
   const handleAct = async (action: string, snoozeUntil?: number) => {
-    await actMutation({ id: item._id, action, snoozeUntil });
+    setSending(true);
+    try {
+      await actMutation({
+        id: item._id,
+        action,
+        snoozeUntil,
+        editedDraft: action === "reply" && editedDraft !== null ? editedDraft : undefined,
+      });
+    } finally {
+      setSending(false);
+    }
     setShowSnooze(false);
   };
 
@@ -68,6 +81,8 @@ function TriageCard({ item }: { item: Doc<"triage"> }) {
     { label: "Tomorrow 9am", ms: getNextMorningMs() },
     { label: "Next week", ms: 7 * 24 * 60 * 60 * 1000 },
   ];
+
+  const currentDraft = editedDraft !== null ? editedDraft : item.draftReply;
 
   return (
     <div className="triage-card">
@@ -95,11 +110,11 @@ function TriageCard({ item }: { item: Doc<"triage"> }) {
 
           {item.suggestedAction && (
             <div className="triage-suggested">
-              Suggested: <strong>{item.suggestedAction}</strong>
+              Recommended: <strong>{item.suggestedAction}</strong>
               {item.category && (
                 <>
-                  {" "}
-                  · <span className="triage-category">{item.category}</span>
+                  {" · "}
+                  <span className="triage-category">{item.category}</span>
                 </>
               )}
             </div>
@@ -107,8 +122,13 @@ function TriageCard({ item }: { item: Doc<"triage"> }) {
 
           {item.draftReply && (
             <div className="triage-draft">
-              <div className="triage-draft-label">Draft Reply</div>
-              <p>{item.draftReply}</p>
+              <div className="triage-draft-label">Draft Reply — edit below or approve as-is</div>
+              <textarea
+                className="triage-draft-editor"
+                value={currentDraft ?? ""}
+                onChange={(e) => setEditedDraft(e.target.value)}
+                rows={4}
+              />
             </div>
           )}
         </div>
@@ -116,11 +136,17 @@ function TriageCard({ item }: { item: Doc<"triage"> }) {
 
       <div className="triage-card-actions">
         {item.draftReply && (
-          <button type="button" className="triage-btn triage-btn-primary" onClick={() => handleAct("reply")} title="Approve & send draft">
-            <Send size={13} /> Approve
+          <button
+            type="button"
+            className="triage-btn triage-btn-primary"
+            onClick={() => handleAct("reply")}
+            disabled={sending}
+            title="Approve & send draft"
+          >
+            <Send size={13} /> {editedDraft !== null && editedDraft !== item.draftReply ? "Send Edited" : "Approve Draft"}
           </button>
         )}
-        <button type="button" className="triage-btn" onClick={() => handleAct("archive")} title="Archive">
+        <button type="button" className="triage-btn" onClick={() => handleAct("archive")} disabled={sending} title="Archive">
           <Archive size={13} /> Archive
         </button>
         <div className="triage-snooze-wrapper">
@@ -137,10 +163,10 @@ function TriageCard({ item }: { item: Doc<"triage"> }) {
             </div>
           )}
         </div>
-        <button type="button" className="triage-btn" onClick={() => handleAct("delegate")} title="Delegate">
+        <button type="button" className="triage-btn" onClick={() => handleAct("delegate")} disabled={sending} title="Delegate">
           <ArrowRight size={13} /> Delegate
         </button>
-        <button type="button" className="triage-btn triage-btn-danger" onClick={() => handleAct("dismiss")} title="Dismiss">
+        <button type="button" className="triage-btn triage-btn-danger" onClick={() => handleAct("dismiss")} disabled={sending} title="Dismiss">
           <X size={13} />
         </button>
       </div>
@@ -154,6 +180,40 @@ function getNextMorningMs(): number {
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(9, 0, 0, 0);
   return tomorrow.getTime() - now.getTime();
+}
+
+function MetricsPanel() {
+  const metrics = useQuery(api.triage.metrics, { days: 30 });
+
+  if (!metrics || metrics.total === 0) return null;
+
+  return (
+    <div className="triage-metrics">
+      <div className="triage-metrics-header">
+        <BarChart3 size={14} /> Learning Metrics (30d)
+      </div>
+      <div className="triage-metrics-grid">
+        <div className="triage-metric">
+          <div className="triage-metric-value">{metrics.actionAgreementRate}%</div>
+          <div className="triage-metric-label">Action Agreement</div>
+        </div>
+        <div className="triage-metric">
+          <div className="triage-metric-value">{metrics.draftAcceptanceRate}%</div>
+          <div className="triage-metric-label">Draft Accepted As-Is</div>
+        </div>
+        <div className="triage-metric">
+          <div className="triage-metric-value">{metrics.breakdown.totalActions}</div>
+          <div className="triage-metric-label">Total Triaged</div>
+        </div>
+        {metrics.avgEditDistance > 0 && (
+          <div className="triage-metric">
+            <div className="triage-metric-value">{metrics.avgEditDistance}%</div>
+            <div className="triage-metric-label">Avg Edit Distance</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function TriageInbox() {
@@ -174,6 +234,8 @@ export default function TriageInbox() {
 
   return (
     <div className="triage-container">
+      <MetricsPanel />
+
       {stats && (
         <div className="triage-stats">
           <span className="triage-stat">

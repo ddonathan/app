@@ -1500,4 +1500,31 @@ http.route({
 });
 
 
+
+// ---------- CORS preflight for triage metrics ----------
+
+http.route({
+  path: "/api/triage/metrics",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+// ---------- GET /api/triage/metrics ----------
+
+http.route({
+  path: "/api/triage/metrics",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    if (!authorize(request)) return error("Unauthorized", 401);
+
+    const url = new URL(request.url);
+    const daysStr = url.searchParams.get("days");
+    const days = daysStr ? Number(daysStr) : undefined;
+
+    const metrics = await ctx.runQuery(api.triage.metrics, { days });
+    return json(metrics);
+  }),
+});
 export default http;
