@@ -293,23 +293,23 @@ export default function TriageInbox() {
           </div>
         ) : (
           <>
-            {confident.length > 0 && (
-              <div className="triage-section">
-                <div className="triage-section-header triage-section-confident">
-                  <ShieldCheck size={16} /> I'm confident on these ({confident.length})
-                </div>
-                {confident.map((item) => (
-                  <TriageCard key={item._id} item={item} />
-                ))}
-              </div>
-            )}
-
             {needsReview.length > 0 && (
               <div className="triage-section">
                 <div className="triage-section-header triage-section-review">
                   <HelpCircle size={16} /> Needs your judgment ({needsReview.length})
                 </div>
                 {needsReview.map((item) => (
+                  <TriageCard key={item._id} item={item} />
+                ))}
+              </div>
+            )}
+
+            {confident.length > 0 && (
+              <div className="triage-section">
+                <div className="triage-section-header triage-section-confident">
+                  <ShieldCheck size={16} /> I'm confident on these ({confident.length})
+                </div>
+                {confident.map((item) => (
                   <TriageCard key={item._id} item={item} />
                 ))}
               </div>
